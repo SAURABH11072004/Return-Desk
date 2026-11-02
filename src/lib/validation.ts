@@ -41,7 +41,9 @@ export const createReturnSchema = z
     orderNumber: requiredText("Order number", 40).toUpperCase(),
     sku: requiredText("Item SKU", 64).toUpperCase(),
     quantity,
-    reason: z.enum(RETURN_REASONS, { error: "Reason must be one of the listed reasons" }),
+    reason: z.enum(RETURN_REASONS, {
+      error: (issue) => (issue.input === undefined ? "Choose a reason for the return" : "Reason must be one of the listed reasons"),
+    }),
     customer: customerContactSchema,
   })
   .strict();

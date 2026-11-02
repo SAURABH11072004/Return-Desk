@@ -33,6 +33,10 @@ export function Dropdown<V extends string>({
   neutral?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  // While a checklist is open, clicks build on this working copy. Applying a filter updates the URL
+  // asynchronously, so deriving each click from `selected` would drop quick successive clicks.
+  const [draft, setDraft] = useState<V[] | null>(null);
+  const current = open && draft ? draft : selected;
   const ref = useRef<HTMLDivElement>(null);
   const panelId = useId();
 
@@ -52,9 +56,16 @@ export function Dropdown<V extends string>({
     };
   }, [open]);
 
+  const toggleOpen = () => {
+    setDraft(open ? null : selected);
+    setOpen(!open);
+  };
+
   const choose = (value: V) => {
     if (multiple) {
-      onChange(selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]);
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      setDraft(next);
+      onChange(next);
     } else {
       onChange([value]);
       setOpen(false);
@@ -71,7 +82,7 @@ export function Dropdown<V extends string>({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggleOpen}
         className={`inline-flex h-10 w-full items-center gap-2 rounded-xl border px-3 text-sm shadow-card transition-colors ${
           active ? "border-accent/40 bg-accent-soft text-accent-text" : "border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink"
         }`}
@@ -93,7 +104,7 @@ export function Dropdown<V extends string>({
           }`}
         >
           {options.map((option) => {
-            const isSelected = selected.includes(option.value);
+            const isSelected = current.includes(option.value);
             const Icon = option.icon;
             return (
               <button

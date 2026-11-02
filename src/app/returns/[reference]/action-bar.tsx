@@ -63,10 +63,11 @@ export function ActionBar({
   const { transitions, canEdit, canRemove } = detail.allowedActions;
   const path = `/api/returns/${encodeURIComponent(detail.reference)}`;
 
+  /** Report a refusal. Inside a dialog the error shows inline (a toast would sit behind the backdrop). */
   function refused(err: unknown, title: string) {
     const message = errorMessage(err);
     setError(message);
-    toast.error(title, message);
+    if (!dialog) toast.error(title, message);
     if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
   }
 
@@ -198,7 +199,6 @@ export function ActionBar({
               );
             }}
             onFailed={(err) => {
-              toast.error(TRANSITION_BUTTONS.approved.failed, errorMessage(err));
               if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
             }}
             onCancel={closeDialog}
@@ -224,7 +224,6 @@ export function ActionBar({
               toast.success("Details updated", `${detail.reference} has been corrected.`);
             }}
             onFailed={(err) => {
-              toast.error("Unable to save the changes", errorMessage(err));
               if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
             }}
             onCancel={closeDialog}

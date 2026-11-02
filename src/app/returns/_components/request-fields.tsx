@@ -1,5 +1,6 @@
 "use client";
 
+import { Check, FileWarning, Minus, PackageX, Plus, Ruler, Shuffle, Undo2, type LucideIcon } from "lucide-react";
 import { describedBy, Field, inputClass } from "@/components/field";
 import type { OrderDetail } from "@/lib/api-types";
 import { REASON_LABELS, RETURN_REASONS, type ReturnReason } from "@/lib/domain";
@@ -27,7 +28,31 @@ export function toPayload(values: RequestFormValues) {
   };
 }
 
+export const REASON_META: Record<ReturnReason, { icon: LucideIcon; hint: string }> = {
+  damaged: { icon: PackageX, hint: "Arrived broken or faulty" },
+  wrong_item: { icon: Shuffle, hint: "Not what was ordered" },
+  size_issue: { icon: Ruler, hint: "Doesn't fit" },
+  not_as_described: { icon: FileWarning, hint: "Differs from the listing" },
+  changed_mind: { icon: Undo2, hint: "No longer wanted" },
+};
+
 type Errors = Record<string, string>;
+
+const optionCard =
+  "relative flex cursor-pointer gap-3 rounded-xl border border-line bg-surface p-3.5 text-left transition-all duration-150 " +
+  "hover:border-line-strong hover:shadow-card has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:shadow-card " +
+  "has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent/15";
+
+function CheckDot({ on }: { on: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`grid size-5 shrink-0 place-items-center rounded-full border transition-colors ${on ? "border-accent bg-accent text-accent-fg" : "border-line-strong bg-surface"}`}
+    >
+      {on && <Check className="size-3" strokeWidth={3} />}
+    </span>
+  );
+}
 
 export function ItemPicker({
   order,
@@ -45,42 +70,40 @@ export function ItemPicker({
 }) {
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={error ? "sku-error" : undefined}>
-      <legend className="text-sm font-medium text-slate-700">Item being returned</legend>
-      <ul className="flex flex-col gap-2">
+      <legend className="mb-2 text-[13px] font-medium text-ink-2">Item being returned</legend>
+      <div className="grid gap-2">
         {order.items.map((item) => {
           const blockedBy = item.liveReturnReference && item.liveReturnReference !== currentReference ? item.liveReturnReference : null;
+          const selected = value === item.sku;
           return (
-            <li key={item.sku}>
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 ${
-                  blockedBy ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-70" : "border-slate-200 bg-white"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="sku"
-                  value={item.sku}
-                  checked={value === item.sku}
-                  disabled={Boolean(blockedBy)}
-                  onChange={() => onChange(item.sku)}
-                  className="mt-0.5"
-                />
-                <span className="flex-1">
-                  <span className="block font-medium text-slate-900">{item.productName}</span>
-                  <span className="block text-xs text-slate-500">
-                    {item.sku} · {item.quantity} ordered · {formatMoney(item.unitPrice)} each
-                  </span>
-                  {blockedBy && (
-                    <span className="mt-1 block text-xs text-amber-800">Already has a live return ({blockedBy})</span>
-                  )}
+            <label key={item.sku} className={`${optionCard} ${blockedBy ? "pointer-events-none opacity-55" : ""}`}>
+              <input
+                type="radio"
+                name="sku"
+                value={item.sku}
+                checked={selected}
+                disabled={Boolean(blockedBy)}
+                onChange={() => onChange(item.sku)}
+                className="sr-only"
+              />
+              <CheckDot on={selected} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-ink">{item.productName}</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  <span className="font-mono">{item.sku}</span> · {item.quantity} ordered · {formatMoney(item.unitPrice)} each
                 </span>
-              </label>
-            </li>
+                {blockedBy && (
+                  <span className="mt-1.5 inline-flex rounded-md border border-review-line bg-review-bg px-1.5 py-0.5 text-[11px] font-medium text-review-fg">
+                    Already has a live return · {blockedBy}
+                  </span>
+                )}
+              </span>
+            </label>
           );
         })}
-      </ul>
+      </div>
       {error && (
-        <p id="sku-error" className="text-xs text-rose-700">
+        <p id="sku-error" className="text-xs text-danger-text">
           {error}
         </p>
       )}
@@ -88,47 +111,78 @@ export function ItemPicker({
   );
 }
 
-export function QuantityAndReasonFields({
-  values,
+export function QuantityField({
+  value,
   onChange,
-  errors,
-  maxQuantity,
+  error,
+  max,
 }: {
-  values: RequestFormValues;
-  onChange: (patch: Partial<RequestFormValues>) => void;
-  errors: Errors;
-  maxQuantity?: number;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  max?: number;
 }) {
+  const n = Number(value) || 0;
+  const step = (delta: number) => onChange(String(Math.max(1, Math.min(max ?? 999, n + delta))));
+  const stepButton =
+    "grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-surface text-ink-2 shadow-card transition-colors hover:border-line-strong hover:text-ink disabled:opacity-40";
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Quantity" htmlFor="quantity" error={errors.quantity} hint={maxQuantity ? `Up to ${maxQuantity}` : undefined}>
+    <Field label="Units returned" htmlFor="quantity" error={error} hint={max ? `Up to ${max} (the quantity ordered)` : undefined}>
+      <div className="flex items-center gap-2">
+        <button type="button" aria-label="Decrease quantity" className={stepButton} onClick={() => step(-1)} disabled={n <= 1}>
+          <Minus className="size-4" />
+        </button>
         <input
-          {...describedBy("quantity", errors.quantity)}
+          {...describedBy("quantity", error)}
           type="number"
           inputMode="numeric"
           min={1}
-          max={maxQuantity}
-          value={values.quantity}
-          onChange={(e) => onChange({ quantity: e.target.value })}
-          className={inputClass}
+          max={max}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`${inputClass.replace("w-full", "w-20")} text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none`}
         />
-      </Field>
-      <Field label="Reason" htmlFor="reason" error={errors.reason}>
-        <select
-          {...describedBy("reason", errors.reason)}
-          value={values.reason}
-          onChange={(e) => onChange({ reason: e.target.value as ReturnReason | "" })}
-          className={inputClass}
-        >
-          <option value="">Choose a reason</option>
-          {RETURN_REASONS.map((reason) => (
-            <option key={reason} value={reason}>
-              {REASON_LABELS[reason]}
-            </option>
-          ))}
-        </select>
-      </Field>
-    </div>
+        <button type="button" aria-label="Increase quantity" className={stepButton} onClick={() => step(1)} disabled={max !== undefined && n >= max}>
+          <Plus className="size-4" />
+        </button>
+      </div>
+    </Field>
+  );
+}
+
+export function ReasonPicker({ value, onChange, error }: { value: ReturnReason | ""; onChange: (reason: ReturnReason) => void; error?: string }) {
+  return (
+    <fieldset aria-describedby={error ? "reason-error" : undefined}>
+      <legend className="mb-2 text-[13px] font-medium text-ink-2">Reason for the return</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {RETURN_REASONS.map((reason) => {
+          const Icon = REASON_META[reason].icon;
+          const selected = value === reason;
+          return (
+            <label key={reason} className={`${optionCard} items-center`}>
+              <input type="radio" name="reason" value={reason} checked={selected} onChange={() => onChange(reason)} className="sr-only" />
+              <span
+                className={`grid size-9 shrink-0 place-items-center rounded-lg border transition-colors ${
+                  selected ? "border-accent/40 bg-surface text-accent-text" : "border-line bg-surface-2 text-ink-2"
+                }`}
+              >
+                <Icon aria-hidden className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-ink">{REASON_LABELS[reason]}</span>
+                <span className="block text-xs text-muted">{REASON_META[reason].hint}</span>
+              </span>
+              <CheckDot on={selected} />
+            </label>
+          );
+        })}
+      </div>
+      {error && (
+        <p id="reason-error" className="mt-1.5 text-xs text-danger-text">
+          {error}
+        </p>
+      )}
+    </fieldset>
   );
 }
 
@@ -143,39 +197,39 @@ export function CustomerFields({
 }) {
   const set = (patch: Partial<RequestFormValues["customer"]>) => onChange({ ...values, ...patch });
   return (
-    <fieldset className="flex flex-col gap-4">
-      <legend className="mb-2 text-sm font-medium text-slate-700">How to reach the customer</legend>
-      <Field label="Name" htmlFor="customer-name" error={errors["customer.name"]}>
-        <input
-          {...describedBy("customer-name", errors["customer.name"])}
-          autoComplete="off"
-          value={values.name}
-          onChange={(e) => set({ name: e.target.value })}
-          className={inputClass}
-        />
-      </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Email" htmlFor="customer-email" error={errors["customer.email"]}>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="sm:col-span-2">
+        <Field label="Customer name" htmlFor="customer-name" error={errors["customer.name"]}>
           <input
-            {...describedBy("customer-email", errors["customer.email"])}
-            type="email"
+            {...describedBy("customer-name", errors["customer.name"])}
             autoComplete="off"
-            value={values.email}
-            onChange={(e) => set({ email: e.target.value })}
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Phone (optional)" htmlFor="customer-phone" error={errors["customer.phone"]}>
-          <input
-            {...describedBy("customer-phone", errors["customer.phone"])}
-            type="tel"
-            autoComplete="off"
-            value={values.phone}
-            onChange={(e) => set({ phone: e.target.value })}
+            value={values.name}
+            onChange={(e) => set({ name: e.target.value })}
             className={inputClass}
           />
         </Field>
       </div>
-    </fieldset>
+      <Field label="Email" htmlFor="customer-email" error={errors["customer.email"]}>
+        <input
+          {...describedBy("customer-email", errors["customer.email"])}
+          type="email"
+          autoComplete="off"
+          value={values.email}
+          onChange={(e) => set({ email: e.target.value })}
+          className={inputClass}
+        />
+      </Field>
+      <Field label="Phone (optional)" htmlFor="customer-phone" error={errors["customer.phone"]}>
+        <input
+          {...describedBy("customer-phone", errors["customer.phone"])}
+          type="tel"
+          autoComplete="off"
+          value={values.phone}
+          onChange={(e) => set({ phone: e.target.value })}
+          placeholder="+91 98765 43210"
+          className={inputClass}
+        />
+      </Field>
+    </div>
   );
 }

@@ -10,7 +10,8 @@ import { toFieldIssues, updateReturnSchema } from "@/lib/validation";
 import {
   CustomerFields,
   ItemPicker,
-  QuantityAndReasonFields,
+  QuantityField,
+  ReasonPicker,
   toPayload,
   type RequestFormValues,
 } from "../_components/request-fields";
@@ -86,7 +87,8 @@ export function EditDetailsDialog({
       ) : (
         <Spinner label="Loading order items" />
       )}
-      <QuantityAndReasonFields values={values} onChange={update} errors={errors} maxQuantity={selectedItem?.quantity} />
+      <QuantityField value={values.quantity} onChange={(quantity) => update({ quantity })} error={errors.quantity} max={selectedItem?.quantity} />
+      <ReasonPicker value={values.reason} onChange={(reason) => update({ reason })} error={errors.reason} />
       <CustomerFields values={values.customer} onChange={(customer) => update({ customer })} errors={errors} />
       {formError && <ErrorAlert message={formError} />}
       <DialogButtons pending={pending} onCancel={onCancel} confirmLabel="Save changes" submit />

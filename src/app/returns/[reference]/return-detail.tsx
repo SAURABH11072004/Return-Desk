@@ -54,7 +54,9 @@ export function ReturnDetailView() {
         <ArrowLeft aria-hidden className="size-4" /> All returns
       </Link>
 
-      <header className="surface relative overflow-hidden p-5 sm:p-7">
+      {/* overflow-clip (not hidden): the action dialogs live inside this element, and a focused input
+          in them must not be able to scroll a clipped container. */}
+      <header className="surface relative overflow-clip p-5 sm:p-7">
         <div aria-hidden className={`absolute -right-20 -top-20 size-64 rounded-full blur-3xl ${meta.soft} opacity-80`} />
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
