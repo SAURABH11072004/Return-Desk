@@ -5,6 +5,7 @@ import * as collection from "@/app/api/returns/route";
 import * as single from "@/app/api/returns/[reference]/route";
 import * as transitions from "@/app/api/returns/[reference]/transitions/route";
 import * as notes from "@/app/api/returns/[reference]/notes/route";
+import * as stats from "@/app/api/returns/stats/route";
 
 /** Empty every table and insert one order with two items: SKU-A (qty 3, 100.00) and SKU-B (qty 1, 50.00). */
 export async function resetDatabase() {
@@ -53,6 +54,7 @@ export const api = {
   remove: async (ref: string) => result(await single.DELETE(request("DELETE", `/api/returns/${ref}`), ctx(ref))),
   transition: async (ref: string, body: unknown) =>
     result(await transitions.POST(request("POST", `/api/returns/${ref}/transitions`, body), ctx(ref))),
+  stats: async () => result(await stats.GET(request("GET", "/api/returns/stats"), undefined)),
   addNote: async (ref: string, body: unknown) => result(await notes.POST(request("POST", `/api/returns/${ref}/notes`, body), ctx(ref))),
 };
 

@@ -31,6 +31,16 @@ export type ReturnDetail = ReturnSummary & {
   statusHistory: StatusChange[];
 };
 
+/** Desk-wide counts for the dashboard. Removed requests are excluded. */
+export type ReturnStats = {
+  total: number;
+  byStatus: Record<ReturnStatus, number>;
+  /** Requests raised in the last 7 days. */
+  raisedLast7Days: number;
+  /** Requests that reached Rejected or Completed in the last 7 days. */
+  closedLast7Days: number;
+};
+
 export type PageMeta = { page: number; pageSize: number; total: number; totalPages: number };
 
 export type OrderSummary = {

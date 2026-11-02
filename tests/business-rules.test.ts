@@ -248,3 +248,21 @@ describe("finding requests", () => {
     expect(res.body.error.code).toBe("INVALID_QUERY");
   });
 });
+
+describe("dashboard stats", () => {
+  it("counts requests per status from the database, excluding removed ones", async () => {
+    await createInStatus("open");
+    await createInStatus("completed", { sku: "SKU-B" });
+    const removed = await createInStatus("open", { sku: "SKU-B" });
+    await api.remove(removed);
+
+    const res = await api.stats();
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual({
+      total: 2,
+      byStatus: { open: 1, in_review: 0, approved: 0, rejected: 0, completed: 1 },
+      raisedLast7Days: 2,
+      closedLast7Days: 1,
+    });
+  });
+});

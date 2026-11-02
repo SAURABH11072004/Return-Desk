@@ -12,10 +12,11 @@ import {
   isEditable,
   isRemovable,
   LIVE_STATUSES,
+  RETURN_STATUSES,
   STATUS_LABELS,
   TRANSITIONS,
 } from "@/lib/domain";
-import type { PageMeta, ReturnDetail, ReturnNote, ReturnSummary } from "@/lib/api-types";
+import type { PageMeta, ReturnDetail, ReturnNote, ReturnStats, ReturnSummary } from "@/lib/api-types";
 import {
   resolutionIssues,
   type CreateNoteInput,
@@ -144,6 +145,38 @@ export async function listReturns(query: ListReturnsQuery): Promise<{ data: Retu
       total,
       totalPages: Math.ceil(total / query.pageSize),
     },
+  };
+}
+
+/** Dashboard counts, aggregated in SQL (never by loading rows into the app). */
+export async function getReturnStats(): Promise<ReturnStats> {
+  const db = getDb();
+  const [statusRows, [recent], [closed]] = await Promise.all([
+    db.select({ status: rr.status, count: count() }).from(rr).where(isNull(rr.deletedAt)).groupBy(rr.status),
+    db
+      .select({ raised: count() })
+      .from(rr)
+      .where(and(isNull(rr.deletedAt), sql`${rr.createdAt} >= now() - interval '7 days'`)),
+    db
+      .select({ closed: sql<number>`count(DISTINCT ${returnStatusChanges.returnRequestId})`.mapWith(Number) })
+      .from(returnStatusChanges)
+      .innerJoin(rr, eq(rr.id, returnStatusChanges.returnRequestId))
+      .where(
+        and(
+          isNull(rr.deletedAt),
+          inArray(returnStatusChanges.toStatus, ["rejected", "completed"]),
+          sql`${returnStatusChanges.changedAt} >= now() - interval '7 days'`,
+        ),
+      ),
+  ]);
+
+  const byStatus = Object.fromEntries(RETURN_STATUSES.map((s) => [s, 0])) as ReturnStats["byStatus"];
+  for (const row of statusRows) byStatus[row.status] = row.count;
+  return {
+    total: Object.values(byStatus).reduce((sum, n) => sum + n, 0),
+    byStatus,
+    raisedLast7Days: recent.raised,
+    closedLast7Days: closed.closed,
   };
 }
 
