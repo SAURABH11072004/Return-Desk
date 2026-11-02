@@ -1,0 +1,3 @@
+ALTER TABLE "return_requests" DROP CONSTRAINT "return_requests_refund_amount_matches_resolution";--> statement-breakpoint
+ALTER TABLE "return_requests" ADD CONSTRAINT "return_requests_refund_amount_matches_resolution" CHECK (("return_requests"."resolution" = 'refund' AND "return_requests"."refund_amount" IS NOT NULL AND "return_requests"."refund_amount" > 0)
+          OR ("return_requests"."resolution" IS DISTINCT FROM 'refund' AND "return_requests"."refund_amount" IS NULL));

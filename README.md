@@ -56,6 +56,8 @@ install all allow it.
 | `npm run db:seed` | **Wipe** all ReturnDesk tables and load the demo data (deterministic) |
 | `npm run db:setup` | Migrate, then seed |
 | `npm test` | Integration tests against `TEST_DATABASE_URL` (a separate database the tests wipe) |
+| `npm run check:rules` | Black-box check of every rule over HTTP against a **running** app (`BASE_URL`, default `http://localhost:3000`). Writes data. |
+| `npm run check:db` | Tries to break every rule with raw SQL, bypassing the API, and expects the database to refuse. Rolled back. |
 | `npm run typecheck` / `npm run lint` | Type check / lint |
 
 ### Environment variables
@@ -261,7 +263,7 @@ Validation errors list every bad field in `details.issues: [{ path, message }]`.
 | --- | --- | --- |
 | 400 | `INVALID_JSON`, `INVALID_QUERY` | The request could not be understood |
 | 404 | `NOT_FOUND` | No such request on the desk (including removed ones), order or endpoint |
-| 405 | (Next.js default, empty body) | Method not supported on that path |
+| 405 | `METHOD_NOT_ALLOWED` (+ `Allow` header) | Method not supported on that path (e.g. `PATCH …/notes`) |
 | 409 | `INVALID_TRANSITION`, `DUPLICATE_LIVE_REQUEST`, `REQUEST_LOCKED`, `REMOVAL_NOT_ALLOWED` | Valid request, but the resource's current state forbids it |
 | 422 | `VALIDATION_FAILED`, `ORDER_ITEM_NOT_FOUND`, `QUANTITY_EXCEEDS_ORDERED`, `REFUND_EXCEEDS_ITEM_VALUE` | Well-formed, but the content breaks a rule |
 | 500 | `INTERNAL_ERROR` | Genuinely unexpected; logged on the server, details not leaked |
@@ -358,7 +360,7 @@ refers to something missing.
 
 - Everything in "What ReturnDesk Must Do", and all five business rules, enforced on the server
   (and by the database where they are invariants).
-- 39 integration tests (`npm test`) that call the real route handlers against a real Postgres.
+- 40 integration tests (`npm test`) that call the real route handlers against a real Postgres.
   They cover the full 5×5 transition matrix, every refusal path of each rule, the concurrent-create
   race, soft delete (gone from the API but still in the table), the append-only trigger, and
   combined search/filter/sort/paging.
@@ -370,12 +372,26 @@ refers to something missing.
 - **Restore a removed request**, and an admin view of removed requests.
 - **Frontend tests** (component tests for the forms, a Playwright smoke test of the main flows).
   The backend is covered; the UI was checked by hand in the browser, including at 375 px.
-- **JSON bodies for 405 responses.** Unsupported methods currently get Next.js's default empty 405.
 - **Optimistic concurrency for edits** (`If-Match`/version column). Today the row lock serialises
   writes, but two agents editing the same details overwrite each other last-write-wins.
 - **Keyset pagination and a CI pipeline** (lint, typecheck, tests on every push).
 
 ---
+
+## Verifying the rules yourself
+
+Three independent layers, all passing on a freshly seeded database:
+
+1. **`npm test`**: 40 integration tests calling the route handlers against a test database.
+2. **`npm run check:rules`**: 78 black-box HTTP checks against the running app (the way a
+   reviewer with curl would test it). Point `BASE_URL` at the deployed app to check it too.
+3. **`npm run check:db`**: 22 raw-SQL attacks on the constraints (19 must be refused, 3 valid
+   control changes must be allowed), all inside a transaction that is rolled back.
+
+The third layer caught a real gap: the refund CHECK constraint let `resolution = 'refund'` with a
+NULL amount through, because a CHECK only rejects FALSE and `NULL > 0` is unknown. The API already
+refused it, but the database safety net did not. It was fixed in migration `0002`, with a
+regression test.
 
 ## Time spent
 

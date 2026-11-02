@@ -15,6 +15,13 @@
       "when": 1793584083932,
       "tag": "0001_notes_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793587968277,
+      "tag": "0002_refund_amount_not_null_check",
+      "breakpoints": true
     }
   ]
 }

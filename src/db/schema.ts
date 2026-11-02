@@ -102,9 +102,11 @@ export const returnRequests = pgTable(
   (t) => [
     check("return_requests_quantity_positive", sql`${t.quantity} > 0`),
     // Rule 2: a refund needs a positive amount; any other resolution (or none) records no amount.
+    // `IS NOT NULL` is explicit because a CHECK only rejects FALSE: with a NULL amount,
+    // `refund_amount > 0` is NULL (unknown) and the row would otherwise slip through.
     check(
       "return_requests_refund_amount_matches_resolution",
-      sql`(${t.resolution} = 'refund' AND ${t.refundAmount} > 0)
+      sql`(${t.resolution} = 'refund' AND ${t.refundAmount} IS NOT NULL AND ${t.refundAmount} > 0)
           OR (${t.resolution} IS DISTINCT FROM 'refund' AND ${t.refundAmount} IS NULL)`,
     ),
     // Rule 2: approved (and therefore completed) requests always carry a resolution; others never do.

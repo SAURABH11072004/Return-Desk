@@ -16,7 +16,7 @@ describe("raising a request", () => {
     expect(res.body.data.allowedActions).toEqual({ transitions: ["in_review"], canEdit: true, canRemove: true, canAddNote: true });
   });
 
-  it("ignores a client-supplied reference (it is rejected as an unknown field)", async () => {
+  it("refuses a client-supplied reference (the server generates it)", async () => {
     const res = await api.create(validCreate({ reference: "MINE-1" }));
     expect(res.status).toBe(422);
   });
@@ -106,6 +106,12 @@ describe("rule 2: approval needs a resolution", () => {
     expect(res.body.data).toMatchObject({ status: "approved", resolution: "refund", refundAmount: "99.50" });
   });
 
+  it("is also enforced by the database: a refund with no amount is refused even bypassing the API", async () => {
+    await expect(
+      getDb().execute(sql`UPDATE return_requests SET status = 'approved', resolution = 'refund', refund_amount = NULL WHERE reference = ${ref}`),
+    ).rejects.toThrow();
+  });
+
   it("refuses a resolution on any other transition", async () => {
     const res = await api.transition(ref, { to: "rejected", resolution: "refund", refundAmount: 5 });
     expect(res.status).toBe(422);
@@ -167,7 +173,7 @@ describe("rule 4: locked once decided", () => {
 });
 
 describe("rule 5: removal", () => {
-  it.each(["open", "rejected"] as const)("soft-deletes a %s request: gone from the desk, kept in the database", async (status) => {
+  it.each(["open", "rejected"] as const)("soft-deletes when %s: gone from the desk, kept in the database", async (status) => {
     const ref = await createInStatus(status);
     expect((await api.remove(ref)).status).toBe(204);
     expect((await api.get(ref)).status).toBe(404);
@@ -179,7 +185,7 @@ describe("rule 5: removal", () => {
     expect(row.deletedAt).toBeInstanceOf(Date);
   });
 
-  it.each(["in_review", "approved", "completed"] as const)("refuses to remove a %s request", async (status) => {
+  it.each(["in_review", "approved", "completed"] as const)("refuses removal when %s", async (status) => {
     const ref = await createInStatus(status);
     const res = await api.remove(ref);
     expect(res.status).toBe(409);
