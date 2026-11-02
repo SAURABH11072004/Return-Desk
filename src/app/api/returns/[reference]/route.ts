@@ -1,5 +1,5 @@
 import { updateReturnSchema } from "@/lib/validation";
-import { readJson, withErrorHandling } from "@/server/http";
+import { readJson, methodNotAllowed, withErrorHandling } from "@/server/http";
 import { getReturn, removeReturn, updateReturn } from "@/server/returns-service";
 
 type Ctx = RouteContext<"/api/returns/[reference]">;
@@ -23,3 +23,6 @@ export const DELETE = withErrorHandling<Ctx>(async (_request, ctx) => {
   await removeReturn(reference.toUpperCase());
   return new Response(null, { status: 204 });
 });
+
+const notAllowed = methodNotAllowed("GET", "PATCH", "DELETE");
+export { notAllowed as PUT, notAllowed as POST };

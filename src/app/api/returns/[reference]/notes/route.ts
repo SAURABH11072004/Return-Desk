@@ -1,5 +1,5 @@
 import { createNoteSchema } from "@/lib/validation";
-import { readJson, withErrorHandling } from "@/server/http";
+import { readJson, methodNotAllowed, withErrorHandling } from "@/server/http";
 import { addNote, listNotes } from "@/server/returns-service";
 
 type Ctx = RouteContext<"/api/returns/[reference]/notes">;
@@ -16,3 +16,6 @@ export const POST = withErrorHandling<Ctx>(async (request, ctx) => {
   const input = await readJson(request, createNoteSchema);
   return Response.json({ data: await addNote(reference.toUpperCase(), input) }, { status: 201 });
 });
+
+const notAllowed = methodNotAllowed("GET", "POST");
+export { notAllowed as PUT, notAllowed as PATCH, notAllowed as DELETE };

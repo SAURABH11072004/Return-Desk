@@ -77,3 +77,21 @@ export function withErrorHandling<Ctx>(handler: (request: Request, ctx: Ctx) => 
     }
   };
 }
+
+/**
+ * Next.js answers unsupported methods with an empty 405. Exporting this for those methods keeps
+ * the error body consistent and tells the client, via `Allow`, what the path does support.
+ */
+export function methodNotAllowed(...allowed: string[]) {
+  return () =>
+    Response.json(
+      {
+        error: {
+          code: "METHOD_NOT_ALLOWED",
+          message: `This endpoint supports ${allowed.join(", ")} only`,
+          details: { allowed },
+        },
+      },
+      { status: 405, headers: { Allow: allowed.join(", ") } },
+    );
+}

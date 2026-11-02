@@ -1,5 +1,5 @@
 import { createReturnSchema, listReturnsQuerySchema } from "@/lib/validation";
-import { parseQuery, readJson, withErrorHandling } from "@/server/http";
+import { parseQuery, readJson, methodNotAllowed, withErrorHandling } from "@/server/http";
 import { createReturn, listReturns } from "@/server/returns-service";
 
 /** GET /api/returns?q=&status=&reason=&sort=&dir=&page=&pageSize= */
@@ -17,3 +17,6 @@ export const POST = withErrorHandling(async (request) => {
     { status: 201, headers: { Location: `/api/returns/${created.reference}` } },
   );
 });
+
+const notAllowed = methodNotAllowed("GET", "POST");
+export { notAllowed as PUT, notAllowed as PATCH, notAllowed as DELETE };
