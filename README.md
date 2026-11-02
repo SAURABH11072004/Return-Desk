@@ -5,7 +5,9 @@ again on a busy desk, move them through a fixed lifecycle, decide the resolution
 replacement or store credit), keep an append-only trail of notes, and take requests off the desk
 without destroying the record.
 
-**Live app:** _DEPLOYED_URL_ (seeded with demo data)
+**Live app: https://return-desk-gamma.vercel.app/returns** (seeded with demo data)
+
+**Repository:** https://github.com/SAURABH11072004/Return-Desk
 
 Stack: Next.js 16 (App Router, route handlers) · React 19 · TypeScript · PostgreSQL · Drizzle ORM ·
 Zod · Tailwind CSS 4 · Vitest.
@@ -81,15 +83,33 @@ deterministic: it uses a seeded PRNG, so every run produces the same data.
 
 ## Deploying
 
-The live app runs on **Vercel**, with **Neon** for Postgres.
+The live app (https://return-desk-gamma.vercel.app) runs on **Vercel** (Hobby plan), with
+**Neon** for Postgres. Every push to `main` redeploys automatically.
 
-1. Create a Neon project and copy its connection string (pooled is fine; it includes `sslmode=require`).
-2. From your machine, build and seed the hosted database:
-   `DATABASE_URL="<neon url>" npm run db:setup`
-3. Import the GitHub repo into Vercel, set `DATABASE_URL` to the same string, and deploy.
+1. Create a Neon project and copy its **pooled** connection string (host contains `-pooler`).
+2. From your machine, build and seed the hosted database. Neon recommends its **direct**
+   endpoint (the same host without `-pooler`) for schema changes:
+   `DATABASE_URL="<direct url>" npm run db:migrate`, then
+   `DATABASE_URL="<pooled url>" npm run db:seed`
+3. Import the GitHub repo into Vercel, set the `DATABASE_URL` environment variable to the
+   **pooled** string, and deploy.
 
-Migrations are deliberately run from a developer machine (or CI), not during the Vercel build. A
-build should not mutate production data, and the seed is destructive.
+Decisions:
+- **Same region for app and database.** The Neon project is in São Paulo (AWS `sa-east-1`), so
+  `vercel.json` pins the functions to Vercel's São Paulo region (`gru1`). Each request makes a
+  few queries, and running them next to the database keeps each one a local round trip.
+- **Pooled connections from the app.** Serverless functions open many short-lived connections;
+  Neon's pooler absorbs them. The client uses `prepare: false`, which transaction-mode poolers need.
+- **Migrations are not part of the Vercel build.** A build should never change production data,
+  and the seed script is destructive. They are run deliberately, from a developer machine or CI.
+
+**Verified against the live deployment** (not just locally): all 78 HTTP rule checks
+(`BASE_URL=https://return-desk-gamma.vercel.app npm run check:rules`), the 22 database constraint
+checks against Neon, edge cases (concurrent approve/reject, five simultaneous creates for one item,
+injection attempts, no cached API responses), the main flows in a browser, and no horizontal
+overflow from 320 to 1920 px. Testing the deployment found one bug that local testing had missed:
+the request page's loading skeleton was wider than a 320 px screen while data loaded across the
+network. It is fixed. `check:rules` writes data, so the demo database is re-seeded afterwards.
 
 ---
 
