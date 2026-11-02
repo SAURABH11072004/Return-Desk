@@ -83,8 +83,8 @@ export function Dropdown<V extends string>({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={toggleOpen}
-        className={`inline-flex h-10 w-full items-center gap-2 rounded-xl border px-3 text-sm shadow-card transition-colors ${
-          active ? "border-accent/40 bg-accent-soft text-accent-text" : "border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink"
+        className={`inline-flex h-9 w-full items-center gap-2 rounded-lg border px-3 text-sm transition-colors ${
+          active ? "border-accent/35 bg-accent-soft text-accent-text" : "border-line-strong bg-surface text-ink-2 hover:bg-surface-3 hover:text-ink"
         }`}
       >
         <TriggerIcon aria-hidden className="size-4 shrink-0 opacity-80" />
@@ -99,7 +99,7 @@ export function Dropdown<V extends string>({
           id={panelId}
           role="menu"
           aria-label={label}
-          className={`absolute z-30 mt-2 w-60 max-w-[calc(100vw-2rem)] animate-scale-in rounded-xl border border-line bg-surface p-1.5 shadow-floating ${
+          className={`absolute z-30 mt-1.5 w-56 max-w-[calc(100vw-2rem)] animate-pop-in rounded-lg border border-line bg-surface p-1 shadow-pop ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
@@ -113,7 +113,7 @@ export function Dropdown<V extends string>({
                 role={multiple ? "menuitemcheckbox" : "menuitemradio"}
                 aria-checked={isSelected}
                 onClick={() => choose(option.value)}
-                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
+                className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
               >
                 {multiple ? (
                   <span

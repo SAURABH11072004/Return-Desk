@@ -39,17 +39,17 @@ export const REASON_META: Record<ReturnReason, { icon: LucideIcon; hint: string 
 type Errors = Record<string, string>;
 
 const optionCard =
-  "relative flex cursor-pointer gap-3 rounded-xl border border-line bg-surface p-3.5 text-left transition-all duration-150 " +
-  "hover:border-line-strong hover:shadow-card has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:shadow-card " +
-  "has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent/15";
+  "relative flex cursor-pointer gap-3 rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-left transition-colors duration-150 " +
+  "hover:bg-surface-2 has-[:checked]:border-accent has-[:checked]:bg-accent-soft " +
+  "has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-accent/15";
 
 function CheckDot({ on }: { on: boolean }) {
   return (
     <span
       aria-hidden
-      className={`grid size-5 shrink-0 place-items-center rounded-full border transition-colors ${on ? "border-accent bg-accent text-accent-fg" : "border-line-strong bg-surface"}`}
+      className={`mt-0.5 grid size-4 shrink-0 place-items-center rounded-full border transition-colors ${on ? "border-accent bg-accent text-accent-fg" : "border-line-strong bg-surface"}`}
     >
-      {on && <Check className="size-3" strokeWidth={3} />}
+      {on && <Check className="size-2.5" strokeWidth={3.5} />}
     </span>
   );
 }
@@ -70,8 +70,8 @@ export function ItemPicker({
 }) {
   return (
     <fieldset className="flex flex-col gap-2" aria-describedby={error ? "sku-error" : undefined}>
-      <legend className="mb-2 text-[13px] font-medium text-ink-2">Item being returned</legend>
-      <div className="grid gap-2">
+      <legend className="sr-only">Item being returned</legend>
+      <div className="grid gap-1.5">
         {order.items.map((item) => {
           const blockedBy = item.liveReturnReference && item.liveReturnReference !== currentReference ? item.liveReturnReference : null;
           const selected = value === item.sku;
@@ -93,7 +93,7 @@ export function ItemPicker({
                   <span className="font-mono">{item.sku}</span> · {item.quantity} ordered · {formatMoney(item.unitPrice)} each
                 </span>
                 {blockedBy && (
-                  <span className="mt-1.5 inline-flex rounded-md border border-review-line bg-review-bg px-1.5 py-0.5 text-[11px] font-medium text-review-fg">
+                  <span className="mt-1 inline-flex rounded bg-review-bg px-1.5 py-0.5 text-[11px] font-medium text-review-fg">
                     Already has a live return · {blockedBy}
                   </span>
                 )}
@@ -125,7 +125,7 @@ export function QuantityField({
   const n = Number(value) || 0;
   const step = (delta: number) => onChange(String(Math.max(1, Math.min(max ?? 999, n + delta))));
   const stepButton =
-    "grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-surface text-ink-2 shadow-card transition-colors hover:border-line-strong hover:text-ink disabled:opacity-40";
+    "grid size-9 shrink-0 place-items-center rounded-lg border border-line-strong bg-surface text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink disabled:opacity-40";
   return (
     <Field label="Units returned" htmlFor="quantity" error={error} hint={max ? `Up to ${max} (the quantity ordered)` : undefined}>
       <div className="flex items-center gap-2">
@@ -150,11 +150,22 @@ export function QuantityField({
   );
 }
 
-export function ReasonPicker({ value, onChange, error }: { value: ReturnReason | ""; onChange: (reason: ReturnReason) => void; error?: string }) {
+export function ReasonPicker({
+  value,
+  onChange,
+  error,
+  hideLegend = false,
+}: {
+  value: ReturnReason | "";
+  onChange: (reason: ReturnReason) => void;
+  error?: string;
+  /** When the surrounding section already says "Reason". */
+  hideLegend?: boolean;
+}) {
   return (
     <fieldset aria-describedby={error ? "reason-error" : undefined}>
-      <legend className="mb-2 text-[13px] font-medium text-ink-2">Reason for the return</legend>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <legend className={hideLegend ? "sr-only" : "mb-1.5 text-[13px] font-medium text-ink-2"}>Reason</legend>
+      <div className="grid gap-1.5 sm:grid-cols-2">
         {RETURN_REASONS.map((reason) => {
           const Icon = REASON_META[reason].icon;
           const selected = value === reason;
@@ -162,8 +173,8 @@ export function ReasonPicker({ value, onChange, error }: { value: ReturnReason |
             <label key={reason} className={`${optionCard} items-center`}>
               <input type="radio" name="reason" value={reason} checked={selected} onChange={() => onChange(reason)} className="sr-only" />
               <span
-                className={`grid size-9 shrink-0 place-items-center rounded-lg border transition-colors ${
-                  selected ? "border-accent/40 bg-surface text-accent-text" : "border-line bg-surface-2 text-ink-2"
+                className={`grid size-7 shrink-0 place-items-center rounded-md transition-colors ${
+                  selected ? "bg-surface text-accent-text" : "bg-surface-3 text-ink-2"
                 }`}
               >
                 <Icon aria-hidden className="size-4" />

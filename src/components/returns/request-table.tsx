@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/status-badge";
@@ -8,75 +8,74 @@ import type { ReturnSummary } from "@/lib/api-types";
 import { REASON_LABELS, RESOLUTION_LABELS } from "@/lib/domain";
 import { formatDate, formatMoney, formatRelative } from "@/lib/format";
 
+const th = "px-3 py-2.5 text-left text-xs font-medium text-muted";
+
 /** Desktop queue. Whole rows are clickable; the reference stays a real link for keyboard and new-tab use. */
 export function RequestTable({ rows }: { rows: ReturnSummary[] }) {
   const router = useRouter();
   return (
-    <div className="surface hidden overflow-hidden lg:block">
+    <div className="hidden overflow-hidden rounded-xl border border-line bg-surface lg:block">
       <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-faint">
-            <th scope="col" className="py-3 pl-5 pr-3 font-semibold">Request</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Customer</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Order · Item</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Reason</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Status</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Resolution</th>
-            <th scope="col" className="px-3 py-3 font-semibold">Created</th>
-            <th scope="col" className="py-3 pl-3 pr-5 text-right font-semibold">
-              <span className="sr-only">Actions</span>
+        <thead className="border-b border-line bg-surface-2">
+          <tr>
+            <th scope="col" className={`${th} pl-4`}>Request</th>
+            <th scope="col" className={th}>Customer</th>
+            <th scope="col" className={th}>Order · Item</th>
+            <th scope="col" className={th}>Reason</th>
+            <th scope="col" className={th}>Status</th>
+            <th scope="col" className={th}>Resolution</th>
+            <th scope="col" className={th}>Created</th>
+            <th scope="col" className="w-8 pr-3">
+              <span className="sr-only">Open</span>
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-line">
-          {rows.map((row, i) => (
+          {rows.map((row) => (
             <tr
               key={row.reference}
               onClick={() => router.push(`/returns/${row.reference}`)}
-              style={{ animationDelay: `${i * 25}ms` }}
-              className="group animate-fade-in cursor-pointer transition-colors duration-150 hover:bg-surface-2"
+              className="group cursor-pointer transition-colors duration-100 hover:bg-surface-2"
             >
-              <td className="py-3.5 pl-5 pr-3">
+              <td className="py-3 pl-4 pr-3 align-top">
                 <Link
                   href={`/returns/${row.reference}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="font-mono text-[13px] font-semibold text-ink group-hover:text-accent-text"
+                  className="font-mono text-[13px] font-medium text-ink hover:text-accent-text hover:underline"
                 >
                   {row.reference}
                 </Link>
               </td>
-              <td className="max-w-[200px] px-3 py-3.5">
-                <div className="truncate font-medium text-ink">{row.customer.name}</div>
-                <div className="truncate text-xs text-faint">{row.customer.email}</div>
+              <td className="max-w-[200px] px-3 py-3 align-top">
+                <div className="truncate text-ink">{row.customer.name}</div>
+                <div className="truncate text-xs text-muted">{row.customer.email}</div>
               </td>
-              <td className="max-w-[240px] px-3 py-3.5">
-                <div className="font-mono text-[12px] text-ink-2">{row.order.orderNumber}</div>
-                <div className="truncate text-xs text-faint">
+              <td className="max-w-[240px] px-3 py-3 align-top">
+                <div className="truncate text-ink">
                   {row.quantity} × {row.item.productName}
                 </div>
+                <div className="font-mono text-xs text-muted">{row.order.orderNumber}</div>
               </td>
-              <td className="px-3 py-3.5 text-ink-2">{REASON_LABELS[row.reason]}</td>
-              <td className="px-3 py-3.5">
+              <td className="px-3 py-3 align-top text-ink-2">{REASON_LABELS[row.reason]}</td>
+              <td className="px-3 py-3 align-top">
                 <StatusBadge status={row.status} />
               </td>
-              <td className="px-3 py-3.5 text-ink-2">
+              <td className="px-3 py-3 align-top text-ink-2">
                 {row.resolution ? (
                   <>
                     <div>{RESOLUTION_LABELS[row.resolution]}</div>
-                    {row.refundAmount && <div className="text-xs tabular-nums text-faint">{formatMoney(row.refundAmount)}</div>}
+                    {row.refundAmount && <div className="text-xs tabular-nums text-muted">{formatMoney(row.refundAmount)}</div>}
                   </>
                 ) : (
                   <span className="text-faint">—</span>
                 )}
               </td>
-              <td className="whitespace-nowrap px-3 py-3.5">
+              <td className="whitespace-nowrap px-3 py-3 align-top">
                 <div className="text-ink-2">{formatDate(row.createdAt)}</div>
-                <div className="text-xs text-faint">{formatRelative(row.createdAt)}</div>
+                <div className="text-xs text-muted">{formatRelative(row.createdAt)}</div>
               </td>
-              <td className="py-3.5 pl-3 pr-5 text-right">
-                <span className="inline-flex size-8 items-center justify-center rounded-lg text-faint transition-all duration-200 group-hover:bg-surface group-hover:text-accent-text group-hover:shadow-card">
-                  <ArrowUpRight aria-hidden className="size-4 transition-transform duration-200 group-hover:-translate-y-px group-hover:translate-x-px" />
-                </span>
+              <td className="py-3 pr-3 align-top">
+                <ChevronRight aria-hidden className="mt-0.5 size-4 text-line-strong transition-colors group-hover:text-muted" />
               </td>
             </tr>
           ))}

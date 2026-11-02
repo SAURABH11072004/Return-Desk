@@ -130,7 +130,7 @@ export function ActionBar({
 
   if (transitions.length === 0 && !canEdit && !canRemove) {
     return (
-      <p className="rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-muted">
+      <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-[13px] text-muted">
         Closed. No further status changes are possible.
       </p>
     );
@@ -308,7 +308,7 @@ function ApproveForm({
             return (
               <label
                 key={option}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-line bg-surface p-3 transition-all hover:border-line-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:shadow-card has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-accent/15"
+                className="flex cursor-pointer items-center gap-3 rounded-lg border border-line-strong bg-surface px-3 py-2.5 transition-colors hover:bg-surface-2 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-accent/15"
               >
                 <input
                   type="radio"
@@ -318,7 +318,7 @@ function ApproveForm({
                   onChange={() => setResolution(option)}
                   className="sr-only"
                 />
-                <span className="grid size-9 place-items-center rounded-lg border border-line bg-surface-2 text-ink-2">
+                <span className="grid size-8 place-items-center rounded-md bg-surface-3 text-ink-2">
                   <Icon aria-hidden className="size-4" />
                 </span>
                 <span className="flex-1">
@@ -327,7 +327,7 @@ function ApproveForm({
                 </span>
                 <span
                   aria-hidden
-                  className={`size-4 rounded-full border-2 transition-colors ${resolution === option ? "border-accent bg-accent shadow-[inset_0_0_0_3px_var(--color-surface)]" : "border-line-strong"}`}
+                  className={`size-4 rounded-full transition-colors ${resolution === option ? "border-[5px] border-accent bg-surface" : "border border-line-strong"}`}
                 />
               </label>
             );
@@ -341,7 +341,7 @@ function ApproveForm({
       </fieldset>
 
       {resolution === "refund" && (
-        <div className="animate-fade-up">
+        <div>
           <Field
             label="Refund amount (₹)"
             htmlFor="refund-amount"

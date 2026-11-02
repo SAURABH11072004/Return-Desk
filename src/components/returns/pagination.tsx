@@ -15,11 +15,11 @@ export function Pagination({ meta, onPage }: { meta: PageMeta; onPage: (page: nu
   const to = Math.min(meta.page * meta.pageSize, meta.total);
   const pastEnd = from > meta.total;
   const navButton =
-    "inline-flex h-9 items-center gap-1 rounded-lg border border-line bg-surface px-2.5 text-sm text-ink-2 shadow-card transition-colors hover:border-line-strong hover:text-ink disabled:pointer-events-none disabled:opacity-40";
+    "inline-flex h-8 items-center gap-1 rounded-lg border border-line-strong bg-surface px-2.5 text-[13px] text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink disabled:pointer-events-none disabled:opacity-40";
 
   return (
     <nav aria-label="Pagination" className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-      <p className="text-sm text-muted">
+      <p className="text-[13px] text-muted">
         {pastEnd ? (
           <>Page {meta.page} is past the end of the results.</>
         ) : (
@@ -51,8 +51,8 @@ export function Pagination({ meta, onPage }: { meta: PageMeta; onPage: (page: nu
                 type="button"
                 onClick={() => onPage(item)}
                 aria-current={item === meta.page ? "page" : undefined}
-                className={`h-9 min-w-9 rounded-lg px-2 text-sm tabular-nums transition-colors ${
-                  item === meta.page ? "bg-ink font-semibold text-canvas" : "text-ink-2 hover:bg-surface-3"
+                className={`h-8 min-w-8 rounded-lg px-2 text-[13px] tabular-nums transition-colors ${
+                  item === meta.page ? "border border-line-strong bg-surface font-medium text-ink" : "text-muted hover:bg-surface-3 hover:text-ink"
                 }`}
               >
                 {item}

@@ -1,46 +1,31 @@
-import { ChevronRight, Package } from "lucide-react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import type { ReturnSummary } from "@/lib/api-types";
 import { REASON_LABELS, RESOLUTION_LABELS } from "@/lib/domain";
 import { formatRelative } from "@/lib/format";
 
-/** The queue on phones and tablets: one card per request, same information as a table row. */
+/** The queue on phones and tablets: a stacked list with the same information as a table row. */
 export function RequestCards({ rows }: { rows: ReturnSummary[] }) {
   return (
-    <ul className="grid gap-3 md:grid-cols-2 lg:hidden">
-      {rows.map((row, i) => (
-        <li key={row.reference} className="animate-fade-up" style={{ animationDelay: `${i * 30}ms` }}>
-          <Link href={`/returns/${row.reference}`} className="surface surface-lift flex h-full flex-col gap-3 p-4">
+    <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface lg:hidden">
+      {rows.map((row) => (
+        <li key={row.reference}>
+          <Link href={`/returns/${row.reference}`} className="flex flex-col gap-1.5 px-4 py-3.5 transition-colors active:bg-surface-3 hover:bg-surface-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-[13px] font-semibold text-ink">{row.reference}</span>
+              <span className="font-mono text-[13px] font-medium text-ink">{row.reference}</span>
               <StatusBadge status={row.status} />
             </div>
-            <div className="min-w-0">
-              <p className="truncate font-medium text-ink">{row.customer.name}</p>
-              <p className="truncate text-xs text-faint">{row.customer.email}</p>
-            </div>
-            <div className="flex items-center gap-2.5 rounded-xl bg-surface-2 p-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface text-faint">
-                <Package aria-hidden className="size-4" />
-              </span>
-              <div className="min-w-0 text-xs">
-                <p className="truncate font-medium text-ink-2">
-                  {row.quantity} × {row.item.productName}
-                </p>
-                <p className="font-mono text-faint">{row.order.orderNumber}</p>
-              </div>
-            </div>
-            <div className="mt-auto flex items-center justify-between text-xs text-muted">
-              <span>
-                {REASON_LABELS[row.reason]}
+            <p className="truncate text-sm text-ink">
+              {row.customer.name}
+              <span className="text-muted"> · {row.quantity} × {row.item.productName}</span>
+            </p>
+            <p className="flex items-center justify-between gap-2 text-xs text-muted">
+              <span className="truncate">
+                <span className="font-mono">{row.order.orderNumber}</span> · {REASON_LABELS[row.reason]}
                 {row.resolution && <> · {RESOLUTION_LABELS[row.resolution]}</>}
               </span>
-              <span className="flex items-center gap-1 text-faint">
-                {formatRelative(row.createdAt)}
-                <ChevronRight aria-hidden className="size-3.5" />
-              </span>
-            </div>
+              <span className="shrink-0">{formatRelative(row.createdAt)}</span>
+            </p>
           </Link>
         </li>
       ))}

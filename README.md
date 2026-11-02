@@ -278,42 +278,40 @@ refers to something missing.
 
 ## Frontend
 
-A deliberate design system rather than a generic admin theme: semantic colour tokens
-(`bg-surface`, `text-ink`, `border-line`, a status palette …) defined once in
-`src/app/globals.css`, an automatic **dark mode** that follows the operating system, soft layered
-shadows for depth, 150–300 ms ease-out motion, and full `prefers-reduced-motion` support.
-Icons are Lucide throughout. **Every number and event on screen comes from the API**: nothing is
-hard-coded or invented.
+Designed as an internal operations tool, not a marketing site: a warm neutral palette
+(off-white canvas, white panels, charcoal text, one restrained blue accent), Inter, 8px controls
+and 12px panels, hierarchy from spacing, type and hairline borders, and shadows only on things that
+float (menus, dialogs, toasts). Motion is limited to short fades and hover states and respects
+`prefers-reduced-motion`. All tokens live in `src/app/globals.css`; icons are Lucide.
+**Every number and event on screen comes from the API**: nothing is hard-coded or invented.
 
-- **Dashboard** (`/returns`)
-  - Hero with a CSS-only, 3D isometric stack showing the request → review → resolution →
-    completion stages (no images).
-  - KPI cards (total on desk + Open / In Review / Approved / Completed, each with its share of the
-    desk, plus requests raised and closed in the last 7 days) from `GET /api/returns/stats`, which
-    aggregates in SQL. Clicking a status card filters the queue.
-  - **Workflow graph** of the real state machine with live counts. Its edges are checked against
-    `TRANSITIONS` in development, so it can never show a move the server would refuse.
-  - **Queue**: command-style search (debounced 350 ms, `/` to focus, in-flight requests aborted),
-    status (multi-select), reason and sort menus, removable filter chips and a result count. The
-    URL query string is the state and is forwarded unchanged to `GET /api/returns`, so filtering,
-    sorting and paging stay in SQL. Table from `lg`, cards below; skeletons that mirror the real
-    layout; purposeful empty and error states; numbered pagination.
-- **Request detail** (`/returns/RD-…`): header with status, relative times and **only the actions
-  listed in the API's `allowedActions`**; info cards; resolution; notes as an activity feed; and a
-  **timeline built only from recorded data** (creation + status history), with the remaining
-  lifecycle steps drawn hollow and labelled *Upcoming*. Approve uses resolution cards (and an amount
-  for refunds); reject, complete and remove use confirmation dialogs (removal explains the record is
-  kept). Success and failure produce toasts carrying the server's message. A 409/404 also reloads
-  the request so the offered actions match its real state.
-- **New return** (`/returns/new`): a guided flow. 01 order & item (debounced order search; items
-  that already have a live return are shown disabled with its reference), 02 customer (prefilled
-  from the order), 03 return details (quantity stepper, reason cards), with a live **04 Review**
-  panel. The order comes first because it decides which items can be returned and pre-fills the
-  customer.
+- **Returns** (`/returns`)
+  - A KPI strip (total on desk, then Open / In Review / Approved / Completed with their share of
+    the desk, plus requests new and closed this week) from `GET /api/returns/stats`, which
+    aggregates in SQL. Clicking a status filters the queue.
+  - "How a return moves": the real state machine as four numbered steps with Rejected as a branch
+    from In Review, with live counts. Its edges are checked against `TRANSITIONS` in development, so
+    it can never show a move the server would refuse.
+  - **Return queue**, the main focus: debounced search (`/` to focus, in-flight requests aborted),
+    status (multi-select), reason and sort menus, removable filter chips, a result count, a
+    table from `lg` and a stacked list below, skeletons, empty and error states, pagination. The URL
+    query string is the state and is forwarded unchanged to `GET /api/returns`, so filtering,
+    sorting and paging stay in SQL.
+- **Return request** (`/returns/RD-…`): a header with status, relative times and **only the
+  actions listed in the API's `allowedActions`**; a details sheet (customer, order, item, quantity,
+  reason, status, resolution); notes; and a request timeline built only from recorded data
+  (creation + status history), with the remaining lifecycle steps marked *upcoming*. Approve asks
+  for a resolution (and an amount for refunds); reject, complete and remove ask for confirmation.
+  Toasts carry the server's message. If another agent changed the request first, the dialog closes,
+  the request reloads and the reason is shown beside the refreshed actions.
+- **New return request** (`/returns/new`): a two-column form (section title and help text on
+  the left, fields on the right; one column on mobile): order → item and quantity → customer
+  (prefilled from the order) → reason, with a summary and Create button in the footer. Items that
+  already have a live return are shown disabled with its reference.
 - **Forms validate with the same Zod schemas as the API** (`src/lib/validation.ts`) for instant
   feedback. The server re-validates, and its field errors are mapped back onto the inputs.
-- **Responsive:** measured with no horizontal overflow at 320, 375, 390, 768 and 1024 px on every
-  page, and checked visually at 375 px.
+- **Responsive:** measured with no horizontal overflow at 320, 375, 390, 768, 1024, 1440 and
+  1920 px on every page, and checked visually at 375 px.
 
 ---
 

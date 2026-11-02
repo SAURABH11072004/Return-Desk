@@ -1,167 +1,94 @@
 @import "tailwindcss";
 
 /*
- * ReturnDesk design tokens.
+ * ReturnDesk design tokens: a warm, neutral palette for an operations tool.
  * Components use semantic names (bg-surface, text-ink, border-line, bg-open-bg …), never raw
- * palette colours, so the whole UI switches to dark mode by redefining the variables below.
+ * palette colours. Hierarchy comes from spacing, type and hairline borders; shadows are reserved
+ * for things that float (menus, dialogs, toasts).
  */
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, monospace;
 
-  --color-canvas: #f5f6f8;
+  --color-canvas: #f7f7f5;
   --color-surface: #ffffff;
-  --color-surface-2: #f8f9fb;
-  --color-surface-3: #eff1f5;
-  --color-ink: #0d1424;
-  --color-ink-2: #3a4356;
-  --color-muted: #5f6879;
-  --color-faint: #8b93a3;
-  --color-line: #e5e8ee;
-  --color-line-strong: #d3d8e1;
+  --color-surface-2: #fafaf9;
+  --color-surface-3: #f1f1ef;
+  --color-ink: #1f2023;
+  --color-ink-2: #3d3f45;
+  --color-muted: #6b6f78;
+  --color-faint: #9a9da5;
+  --color-line: #e6e5e1;
+  --color-line-strong: #d6d4cf;
 
-  --color-accent: #4f46e5;
-  --color-accent-hover: #4338ca;
+  --color-accent: #3157d5;
+  --color-accent-hover: #2647b8;
   --color-accent-fg: #ffffff;
-  --color-accent-soft: #eef0ff;
-  --color-accent-text: #4338ca;
+  --color-accent-soft: #eef2fc;
+  --color-accent-text: #2a4bb8;
 
-  --color-danger: #e11d48;
-  --color-danger-hover: #be123c;
-  --color-danger-soft: #fff1f3;
-  --color-danger-text: #b4183c;
-  --color-danger-line: #fbcbd5;
+  --color-danger: #c43d3d;
+  --color-danger-hover: #a93232;
+  --color-danger-soft: #fbf0ef;
+  --color-danger-text: #a83232;
+  --color-danger-line: #efcfcc;
 
-  --color-success: #059669;
+  --color-success: #18864b;
 
-  /* Status palette: tinted background, border, text, solid dot. */
-  --color-open-bg: #eff6ff;
-  --color-open-line: #cfe0fb;
-  --color-open-fg: #1d4f91;
-  --color-open-dot: #3b82f6;
-  --color-review-bg: #fff8eb;
-  --color-review-line: #f5dfae;
-  --color-review-fg: #8a5300;
-  --color-review-dot: #f59e0b;
-  --color-approved-bg: #ecfbf4;
-  --color-approved-line: #c3ead7;
-  --color-approved-fg: #0b6b45;
-  --color-approved-dot: #10b981;
-  --color-rejected-bg: #fff1f3;
-  --color-rejected-line: #f9cdd6;
-  --color-rejected-fg: #9f1d3a;
-  --color-rejected-dot: #f43f5e;
-  --color-completed-bg: #f2f3f7;
-  --color-completed-line: #dcdfe7;
-  --color-completed-fg: #3b4252;
-  --color-completed-dot: #64748b;
+  /* Status: light tint + dark text, plus a solid dot colour. */
+  --color-open-bg: #ebf1fd;
+  --color-open-fg: #234ba6;
+  --color-open-dot: #3d6ad8;
+  --color-review-bg: #fbf3e2;
+  --color-review-fg: #855400;
+  --color-review-dot: #c58a12;
+  --color-approved-bg: #e8f4ec;
+  --color-approved-fg: #146b3c;
+  --color-approved-dot: #23955a;
+  --color-rejected-bg: #faecec;
+  --color-rejected-fg: #9c2f2f;
+  --color-rejected-dot: #c94a4a;
+  --color-completed-bg: #efefed;
+  --color-completed-fg: #4a4d55;
+  --color-completed-dot: #8a8d95;
 
-  --shadow-card: 0 1px 2px rgb(13 20 36 / 0.04), 0 1px 1px rgb(13 20 36 / 0.03);
-  --shadow-raised: 0 1px 2px rgb(13 20 36 / 0.05), 0 10px 28px -14px rgb(13 20 36 / 0.22);
-  --shadow-floating: 0 2px 4px rgb(13 20 36 / 0.06), 0 24px 48px -20px rgb(13 20 36 / 0.32);
-  --shadow-accent: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 6px 16px -6px rgb(79 70 229 / 0.55);
+  --shadow-xs: 0 1px 2px rgb(31 32 35 / 0.05);
+  --shadow-pop: 0 1px 2px rgb(31 32 35 / 0.06), 0 12px 32px -12px rgb(31 32 35 / 0.18);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --animate-fade-up: fade-up 320ms var(--ease-out-soft) both;
-  --animate-fade-in: fade-in 220ms ease-out both;
-  --animate-scale-in: scale-in 200ms var(--ease-out-soft) both;
-  --animate-toast-in: toast-in 260ms var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 160ms ease-out both;
+  --animate-pop-in: pop-in 160ms var(--ease-out-soft) both;
   --animate-shimmer: shimmer 1.4s linear infinite;
-  --animate-flow: flow 1.6s linear infinite;
-  --animate-ping-soft: ping-soft 2.2s var(--ease-out-soft) infinite;
-  --animate-float: float 6s ease-in-out infinite;
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  @keyframes scale-in {
-    from { opacity: 0; transform: translateY(6px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  @keyframes toast-in {
-    from { opacity: 0; transform: translateY(12px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   @keyframes shimmer {
     from { background-position: 200% 0; }
     to { background-position: -200% 0; }
   }
-  @keyframes flow {
-    to { stroke-dashoffset: -16; }
-  }
-  @keyframes ping-soft {
-    0% { transform: scale(1); opacity: 0.55; }
-    80%, 100% { transform: scale(2.2); opacity: 0; }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-canvas: #0a0d14;
-    --color-surface: #111520;
-    --color-surface-2: #151a27;
-    --color-surface-3: #1b2131;
-    --color-ink: #e8ebf2;
-    --color-ink-2: #c3c9d6;
-    --color-muted: #98a1b3;
-    --color-faint: #6c7588;
-    --color-line: #222838;
-    --color-line-strong: #2e3548;
-
-    --color-accent: #6366f1;
-    --color-accent-hover: #7c7ff5;
-    --color-accent-soft: rgb(99 102 241 / 0.14);
-    --color-accent-text: #a5b4fc;
-
-    --color-danger-soft: rgb(244 63 94 / 0.12);
-    --color-danger-text: #fda4b4;
-    --color-danger-line: rgb(244 63 94 / 0.35);
-
-    --color-open-bg: rgb(59 130 246 / 0.12);
-    --color-open-line: rgb(59 130 246 / 0.32);
-    --color-open-fg: #9cc3fb;
-    --color-review-bg: rgb(245 158 11 / 0.12);
-    --color-review-line: rgb(245 158 11 / 0.3);
-    --color-review-fg: #fbd17a;
-    --color-approved-bg: rgb(16 185 129 / 0.12);
-    --color-approved-line: rgb(16 185 129 / 0.3);
-    --color-approved-fg: #7fe0b8;
-    --color-rejected-bg: rgb(244 63 94 / 0.12);
-    --color-rejected-line: rgb(244 63 94 / 0.32);
-    --color-rejected-fg: #fda4b4;
-    --color-completed-bg: rgb(148 163 184 / 0.12);
-    --color-completed-line: rgb(148 163 184 / 0.28);
-    --color-completed-fg: #cbd3e1;
-
-    --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-raised: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 30px -14px rgb(0 0 0 / 0.7);
-    --shadow-floating: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 28px 56px -20px rgb(0 0 0 / 0.8);
-    color-scheme: dark;
-  }
 }
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
   html {
     -webkit-tap-highlight-color: transparent;
   }
   body {
     background: var(--color-canvas);
     color: var(--color-ink);
-    font-feature-settings: "cv11", "ss01";
+    font-feature-settings: "cv11", "ss01", "tnum" 0;
   }
   ::selection {
-    background: var(--color-accent-soft);
-    color: var(--color-ink);
+    background: #dbe4fb;
   }
   :focus-visible {
     outline: 2px solid var(--color-accent);
@@ -170,42 +97,33 @@
 }
 
 @layer components {
-  /* A content surface: white card, hairline border, soft shadow. */
-  .surface {
+  /* A content panel: white, hairline border, no shadow. */
+  .panel {
     background: var(--color-surface);
     border: 1px solid var(--color-line);
-    border-radius: 1rem;
-    box-shadow: var(--shadow-card);
+    border-radius: 0.75rem;
   }
-  /* Interactive surface: lifts slightly on hover. */
-  .surface-lift {
-    transition: transform 200ms var(--ease-out-soft), box-shadow 200ms var(--ease-out-soft), border-color 200ms ease-out;
+  /* Small uppercase label used for section eyebrows and table headers. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
   }
-  .surface-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-raised);
-    border-color: var(--color-line-strong);
-  }
-  /* Skeleton placeholder block. */
   .skeleton {
-    border-radius: 0.5rem;
-    background: linear-gradient(90deg, var(--color-surface-3) 0%, var(--color-surface-2) 50%, var(--color-surface-3) 100%);
+    border-radius: 0.375rem;
+    background: linear-gradient(90deg, var(--color-surface-3) 0%, #f7f7f5 50%, var(--color-surface-3) 100%);
     background-size: 200% 100%;
     animation: var(--animate-shimmer);
-  }
-  /* Faint dot grid used behind hero areas. */
-  .dot-grid {
-    background-image: radial-gradient(circle at 1px 1px, var(--color-line-strong) 1px, transparent 0);
-    background-size: 22px 22px;
   }
 }
 
 dialog[open] {
-  animation: var(--animate-scale-in);
+  animation: var(--animate-pop-in);
 }
 dialog::backdrop {
-  background: rgb(10 13 20 / 0.45);
-  backdrop-filter: blur(3px);
+  background: rgb(31 32 35 / 0.32);
   animation: var(--animate-fade-in);
 }
 

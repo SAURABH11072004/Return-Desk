@@ -62,35 +62,34 @@ export function NotesPanel({ detail, onUpdated }: { detail: ReturnDetail; onUpda
   }
 
   return (
-    <section className="surface" aria-labelledby="notes-title">
-      <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6">
+    <section className="panel" aria-labelledby="notes-title">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
         <div>
-          <h2 id="notes-title" className="text-sm font-semibold text-ink">
-            Notes <span className="ml-1 rounded-md bg-surface-3 px-1.5 py-0.5 text-xs font-medium text-muted">{detail.notes.length}</span>
+          <h2 id="notes-title" className="text-[15px] font-semibold text-ink">
+            Notes <span className="ml-1 text-sm font-normal text-muted">{detail.notes.length}</span>
           </h2>
-          <p className="mt-0.5 text-xs text-muted">The conversation trail, oldest first.</p>
         </div>
-        <span className="hidden items-center gap-1.5 text-xs text-faint sm:flex">
-          <Lock aria-hidden className="size-3.5" /> Notes are permanent
+        <span className="flex items-center gap-1.5 text-xs text-muted">
+          <Lock aria-hidden className="size-3.5" /> Permanent once added
         </span>
       </div>
 
-      <div className="px-5 py-5 sm:px-6">
+      <div className="px-5 py-4">
         {detail.notes.length === 0 ? (
           <div className="flex flex-col items-center py-6 text-center">
-            <span className="grid size-11 place-items-center rounded-xl border border-line bg-surface-2 text-faint">
-              <MessageSquareText aria-hidden className="size-5" />
+            <span className="grid size-9 place-items-center rounded-lg border border-line bg-surface-2 text-muted">
+              <MessageSquareText aria-hidden className="size-4" />
             </span>
             <p className="mt-3 text-sm font-medium text-ink">No notes yet</p>
             <p className="mt-0.5 text-xs text-muted">Record what happened and what was agreed with the customer.</p>
           </div>
         ) : (
           <ol className="flex flex-col gap-4">
-            {detail.notes.map((note, i) => (
-              <li key={note.id} className="flex animate-fade-up gap-3" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+            {detail.notes.map((note) => (
+              <li key={note.id} className="flex gap-3">
                 <span
                   aria-hidden
-                  className="grid size-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent/80 to-[#8b5cf6] text-[11px] font-semibold text-white shadow-card"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-surface-3 text-[11px] font-semibold text-ink-2"
                 >
                   {initials(note.author)}
                 </span>
@@ -101,7 +100,7 @@ export function NotesPanel({ detail, onUpdated }: { detail: ReturnDetail; onUpda
                       {formatRelative(note.createdAt)}
                     </time>
                   </div>
-                  <p className="mt-1.5 whitespace-pre-wrap break-words rounded-xl rounded-tl-sm border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-ink-2">
+                  <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-2">
                     {note.body}
                   </p>
                 </div>
@@ -111,7 +110,7 @@ export function NotesPanel({ detail, onUpdated }: { detail: ReturnDetail; onUpda
         )}
       </div>
 
-      <form onSubmit={submit} noValidate className="flex flex-col gap-3 border-t border-line bg-surface-2/60 px-5 py-5 sm:px-6">
+      <form onSubmit={submit} noValidate className="flex flex-col gap-3 rounded-b-xl border-t border-line bg-surface-2 px-5 py-4">
         <Field label="Add a note" htmlFor="note-body" error={errors.body}>
           <textarea
             {...describedBy("note-body", errors.body)}

@@ -41,11 +41,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div
               key={toast.id}
               role={toast.tone === "error" ? "alert" : "status"}
-              className="pointer-events-auto flex w-full max-w-sm animate-toast-in items-start gap-3 rounded-2xl border border-line bg-surface/95 p-3.5 shadow-floating backdrop-blur"
+              className="pointer-events-auto flex w-full max-w-sm animate-pop-in items-start gap-3 rounded-lg border border-line bg-surface p-3.5 shadow-pop"
             >
-              <Icon aria-hidden className={`mt-0.5 size-5 shrink-0 ${toast.tone === "success" ? "text-success" : "text-danger"}`} />
+              <Icon aria-hidden className={`mt-0.5 size-4 shrink-0 ${toast.tone === "success" ? "text-success" : "text-danger"}`} />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-ink">{toast.title}</p>
+                <p className="text-sm font-medium text-ink">{toast.title}</p>
                 {toast.description && <p className="mt-0.5 text-[13px] text-muted">{toast.description}</p>}
               </div>
               <button

@@ -56,13 +56,13 @@ export function FilterBar({
   ];
 
   return (
-    <div className="surface p-3 sm:p-4">
-      <div className="flex flex-col gap-3 lg:flex-row">
+    <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2 lg:flex-row">
         <div className="relative flex-1">
           <label htmlFor="search" className="sr-only">
             Search returns
           </label>
-          <Search aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-faint" />
+          <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-faint" />
           <input
             ref={searchRef}
             id="search"
@@ -70,9 +70,9 @@ export function FilterBar({
             value={filters.search}
             onChange={(e) => filters.setSearch(e.target.value)}
             placeholder="Search by customer, email, order or reference"
-            className="h-11 w-full rounded-xl border border-line bg-surface-2 pl-10 pr-20 text-sm text-ink placeholder:text-faint transition-[border-color,box-shadow,background-color] duration-150 hover:border-line-strong focus:border-accent focus:bg-surface focus:outline-none focus:ring-4 focus:ring-accent/15 [&::-webkit-search-cancel-button]:hidden"
+            className="h-9 w-full rounded-lg border border-line-strong bg-surface pl-9 pr-16 text-sm text-ink placeholder:text-faint transition-[border-color,box-shadow] duration-150 hover:border-[#c4c2bc] focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 [&::-webkit-search-cancel-button]:hidden"
           />
-          <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+          <span className="absolute right-2.5 top-1/2 flex -translate-y-1/2 items-center gap-2">
             {busy && <LoaderCircle aria-label="Searching" className="size-4 animate-spin text-accent" />}
             {filters.search ? (
               <button
@@ -84,7 +84,7 @@ export function FilterBar({
                 <X className="size-3.5" />
               </button>
             ) : (
-              <kbd className="hidden rounded-md border border-line bg-surface px-1.5 py-0.5 font-mono text-[11px] text-faint sm:inline">/</kbd>
+              <kbd className="hidden rounded border border-line bg-surface-2 px-1.5 font-mono text-[11px] leading-5 text-muted sm:inline">/</kbd>
             )}
           </span>
         </div>
@@ -126,7 +126,7 @@ export function FilterBar({
         </div>
       </div>
 
-      <div className="mt-3 flex min-h-7 flex-wrap items-center gap-2 text-sm" aria-live="polite">
+      <div className="flex min-h-6 flex-wrap items-center gap-2 text-[13px]" aria-live="polite">
         <span className="text-muted">
           {failed ? (
             "Returns could not be loaded"
@@ -142,21 +142,21 @@ export function FilterBar({
         {chips.map((chip) => (
           <span
             key={chip.key}
-            className="inline-flex animate-scale-in items-center gap-1 rounded-full border border-line bg-surface-2 py-0.5 pl-2.5 pr-1 text-xs font-medium text-ink-2"
+            className="inline-flex items-center gap-1 rounded-md border border-line bg-surface py-0.5 pl-2 pr-0.5 text-xs font-medium text-ink-2"
           >
             {chip.label}
             <button
               type="button"
               onClick={chip.remove}
               aria-label={`Remove filter ${chip.label}`}
-              className="grid size-5 place-items-center rounded-full text-faint hover:bg-surface-3 hover:text-ink"
+              className="grid size-5 place-items-center rounded text-faint hover:bg-surface-3 hover:text-ink"
             >
               <X className="size-3" />
             </button>
           </span>
         ))}
         {filters.hasFilters && (
-          <button type="button" onClick={filters.clearAll} className="ml-auto text-xs font-medium text-accent-text hover:underline">
+          <button type="button" onClick={filters.clearAll} className="ml-auto text-[13px] font-medium text-accent-text hover:underline">
             Clear all
           </button>
         )}

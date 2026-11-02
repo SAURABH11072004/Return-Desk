@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, FileQuestion, Lock, Package, ShoppingBag, Tag, User, type LucideIcon } from "lucide-react";
+import { ArrowLeft, FileQuestion, Lock } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,11 +10,10 @@ import { EmptyState } from "@/components/empty-state";
 import { ReturnTimeline } from "@/components/returns/timeline";
 import { Skeleton } from "@/components/skeleton";
 import { StatusBadge } from "@/components/status-badge";
-import { RESOLUTION_META, STATUS_META } from "@/components/status-meta";
 import { useApi } from "@/hooks/use-api";
 import { ApiRequestError, errorMessage } from "@/lib/api-client";
 import type { ReturnDetail } from "@/lib/api-types";
-import { REASON_LABELS, RESOLUTIONS, RESOLUTION_LABELS } from "@/lib/domain";
+import { REASON_LABELS, RESOLUTION_LABELS } from "@/lib/domain";
 import { formatDate, formatDateTime, formatMoney, formatRelative } from "@/lib/format";
 import { ActionBar } from "./action-bar";
 import { NotesPanel } from "./notes-panel";
@@ -33,7 +32,7 @@ export function ReturnDetailView() {
           title={`${reference} is not on the desk`}
           description="It may have been removed from the desk, or the reference is wrong. Removed requests are kept in the database but can no longer be opened."
           action={
-            <Link href="/returns" className={button.primary}>
+            <Link href="/returns" className={button.secondary}>
               Back to returns
             </Link>
           }
@@ -46,79 +45,97 @@ export function ReturnDetailView() {
   }
   if (!data) return <DetailSkeleton />;
 
-  const meta = STATUS_META[data.status];
-
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/returns" className="inline-flex w-fit items-center gap-1.5 text-sm text-muted transition-colors hover:text-ink">
-        <ArrowLeft aria-hidden className="size-4" /> All returns
-      </Link>
-
-      {/* overflow-clip (not hidden): the action dialogs live inside this element, and a focused input
-          in them must not be able to scroll a clipped container. */}
-      <header className="surface relative overflow-clip p-5 sm:p-7">
-        <div aria-hidden className={`absolute -right-20 -top-20 size-64 rounded-full blur-3xl ${meta.soft} opacity-80`} />
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-line pb-5">
+        <Link href="/returns" className="inline-flex w-fit items-center gap-1 text-[13px] text-muted transition-colors hover:text-ink">
+          <ArrowLeft aria-hidden className="size-3.5" /> Returns
+        </Link>
+        {/* overflow-clip: the action dialogs render inside this block, and a focused input in them
+            must not be able to scroll a clipped container. */}
+        <div className="flex flex-col gap-4 overflow-clip lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-faint">Return request</p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="font-mono text-3xl font-semibold tracking-tight text-ink sm:text-4xl">{data.reference}</h1>
+            <p className="eyebrow">Return request</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <h1 className="font-mono text-[28px] font-semibold tracking-[-0.02em] text-ink">{data.reference}</h1>
               <StatusBadge status={data.status} size="md" />
             </div>
-            <p className="mt-2 text-sm text-muted">
+            <p className="mt-1 text-[13px] text-muted">
               Created <time dateTime={data.createdAt} title={formatDateTime(data.createdAt)}>{formatRelative(data.createdAt)}</time>
-              <span className="mx-1.5 text-faint">·</span>
-              Updated <time dateTime={data.updatedAt} title={formatDateTime(data.updatedAt)}>{formatRelative(data.updatedAt)}</time>
+              {" · "}updated <time dateTime={data.updatedAt} title={formatDateTime(data.updatedAt)}>{formatRelative(data.updatedAt)}</time>
               {loading && <span className="ml-2 text-faint">Refreshing…</span>}
             </p>
           </div>
           <ActionBar detail={data} onUpdated={replace} onStale={reload} />
         </div>
-      </header>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
         <div className="flex min-w-0 flex-col gap-6">
-          <section aria-label="Request details" className="grid gap-4 sm:grid-cols-2">
-            <InfoCard icon={User} label="Customer">
-              <p className="font-medium text-ink">{data.customer.name}</p>
-              <a href={`mailto:${data.customer.email}`} className="block truncate text-sm text-accent-text hover:underline">
-                {data.customer.email}
-              </a>
-              {data.customer.phone && <p className="text-sm text-muted">{data.customer.phone}</p>}
-            </InfoCard>
-            <InfoCard icon={ShoppingBag} label="Order">
-              <p className="font-mono font-medium text-ink">{data.order.orderNumber}</p>
-              <p className="text-sm text-muted">Placed {formatDate(data.order.placedAt)}</p>
-            </InfoCard>
-            <InfoCard icon={Package} label="Item">
-              <p className="font-medium text-ink">{data.item.productName}</p>
-              <p className="text-sm text-muted">
-                <span className="font-semibold text-ink-2">{data.quantity}</span> of {data.item.orderedQuantity} returned ·{" "}
-                {formatMoney(data.item.unitPrice)} each
-              </p>
-              <p className="font-mono text-xs text-faint">{data.item.sku}</p>
-            </InfoCard>
-            <InfoCard icon={Tag} label="Reason">
-              <p className="font-medium text-ink">{REASON_LABELS[data.reason]}</p>
-              <p className="text-sm text-muted">Given when the request was raised</p>
-            </InfoCard>
+          <section aria-labelledby="details-title" className="panel">
+            <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
+              <h2 id="details-title" className="text-[15px] font-semibold text-ink">
+                Details
+              </h2>
+              {!data.allowedActions.canEdit && (
+                <span className="flex items-center gap-1.5 text-xs text-muted">
+                  <Lock aria-hidden className="size-3.5" /> Locked after decision
+                </span>
+              )}
+            </div>
+            <dl className="divide-y divide-line">
+              <Row label="Customer">
+                <p className="text-ink">{data.customer.name}</p>
+                <p className="text-muted">
+                  <a href={`mailto:${data.customer.email}`} className="text-accent-text hover:underline">
+                    {data.customer.email}
+                  </a>
+                  {data.customer.phone && <> · {data.customer.phone}</>}
+                </p>
+              </Row>
+              <Row label="Order">
+                <p className="font-mono text-ink">{data.order.orderNumber}</p>
+                <p className="text-muted">Placed {formatDate(data.order.placedAt)}</p>
+              </Row>
+              <Row label="Item">
+                <p className="text-ink">{data.item.productName}</p>
+                <p className="text-muted">
+                  <span className="font-mono">{data.item.sku}</span> · {formatMoney(data.item.unitPrice)} each
+                </p>
+              </Row>
+              <Row label="Quantity">
+                <p className="text-ink">
+                  {data.quantity} <span className="text-muted">of {data.item.orderedQuantity} ordered</span>
+                </p>
+              </Row>
+              <Row label="Reason">
+                <p className="text-ink">{REASON_LABELS[data.reason]}</p>
+              </Row>
+              <Row label="Status">
+                <StatusBadge status={data.status} />
+              </Row>
+              <Row label="Resolution">
+                {data.resolution ? (
+                  <p className="text-ink">
+                    {RESOLUTION_LABELS[data.resolution]}
+                    {data.refundAmount && <span className="font-medium tabular-nums"> · {formatMoney(data.refundAmount)}</span>}
+                  </p>
+                ) : (
+                  <p className="text-muted">{data.status === "rejected" ? "None: the request was rejected" : "Chosen on approval"}</p>
+                )}
+              </Row>
+            </dl>
           </section>
 
-          {!data.allowedActions.canEdit && (
-            <p className="-mt-2 flex items-center gap-2 text-xs text-faint">
-              <Lock aria-hidden className="size-3.5" />
-              Decided requests are locked: customer and item details can no longer change. Notes can still be added.
-            </p>
-          )}
-
-          <ResolutionCard detail={data} />
           <NotesPanel detail={data} onUpdated={replace} />
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <section className="surface p-5">
-            <h2 className="text-sm font-semibold text-ink">Return timeline</h2>
-            <p className="mb-5 mt-0.5 text-xs text-muted">Every status change, in order.</p>
+        <aside className="lg:sticky lg:top-20 lg:self-start">
+          <section aria-labelledby="timeline-title" className="panel px-5 py-4">
+            <h2 id="timeline-title" className="text-[15px] font-semibold text-ink">
+              Request timeline
+            </h2>
+            <p className="mb-4 text-xs text-muted">Every status change, in order.</p>
             <ReturnTimeline detail={data} />
           </section>
         </aside>
@@ -127,87 +144,38 @@ export function ReturnDetailView() {
   );
 }
 
-function InfoCard({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
+function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="surface surface-lift flex gap-3.5 p-4 sm:p-5">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-surface-2 text-ink-2">
-        <Icon aria-hidden className="size-[18px]" />
-      </span>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">{label}</p>
-        {children}
-      </div>
+    <div className="grid gap-1 px-5 py-3 text-sm sm:grid-cols-[140px_minmax(0,1fr)] sm:gap-4">
+      <dt className="text-[13px] text-muted">{label}</dt>
+      <dd className="min-w-0 break-words">{children}</dd>
     </div>
-  );
-}
-
-function ResolutionCard({ detail }: { detail: ReturnDetail }) {
-  return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="resolution-title">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="resolution-title" className="text-sm font-semibold text-ink">
-          Resolution
-        </h2>
-        <p className="text-xs text-muted">
-          {detail.resolution
-            ? "Chosen when the request was approved"
-            : detail.status === "rejected"
-              ? "No resolution: the request was rejected"
-              : "Chosen when the request is approved"}
-        </p>
-      </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {RESOLUTIONS.map((option) => {
-          const Icon = RESOLUTION_META[option].icon;
-          const chosen = detail.resolution === option;
-          return (
-            <div
-              key={option}
-              className={`relative rounded-xl border p-4 transition-all ${
-                chosen ? "border-approved-line bg-approved-bg shadow-raised" : "border-line bg-surface-2 opacity-60"
-              }`}
-            >
-              <Icon aria-hidden className={`size-5 ${chosen ? "text-approved-fg" : "text-faint"}`} />
-              <p className={`mt-3 text-sm font-medium ${chosen ? "text-approved-fg" : "text-muted"}`}>{RESOLUTION_LABELS[option]}</p>
-              {chosen && detail.refundAmount && (
-                <p className="mt-0.5 text-lg font-semibold tabular-nums text-ink">{formatMoney(detail.refundAmount)}</p>
-              )}
-              {chosen && <span className="sr-only">(selected)</span>}
-            </div>
-          );
-        })}
-      </div>
-    </section>
   );
 }
 
 function DetailSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-6">
-      <Skeleton className="h-4 w-24" />
-      <div className="surface flex flex-col gap-3 p-7">
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="h-9 w-56" />
-        <Skeleton className="h-4 w-64" />
+      <div className="flex flex-col gap-3 border-b border-line pb-5">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-8 w-52" />
+        <Skeleton className="h-3 w-60" />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="surface flex gap-3.5 p-5">
-              <Skeleton className="size-10 rounded-xl" />
-              <div className="flex flex-1 flex-col gap-2">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-40" />
-              </div>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
+        <div className="panel divide-y divide-line">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="flex gap-4 px-5 py-3.5">
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-3.5 w-48" />
             </div>
           ))}
         </div>
-        <div className="surface flex flex-col gap-5 p-5">
+        <div className="panel flex flex-col gap-4 p-5">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex gap-3.5">
-              <Skeleton className="size-8 rounded-full" />
-              <div className="flex flex-1 flex-col gap-2">
+            <div key={i} className="flex gap-3">
+              <Skeleton className="size-3 rounded-full" />
+              <div className="flex flex-1 flex-col gap-1.5">
                 <Skeleton className="h-3.5 w-32" />
                 <Skeleton className="h-3 w-24" />
               </div>
