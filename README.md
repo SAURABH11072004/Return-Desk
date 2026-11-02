@@ -218,6 +218,7 @@ All endpoints are JSON. Successful responses wrap their payload in `data`. Lists
 | `GET /api/returns/:reference/notes` | Notes, oldest first | `200 { data: Note[] }` |
 | `POST /api/returns/:reference/notes` | Add a note | `201 { data: Note }` |
 | `GET /api/orders?q=` | Find orders by number or customer (max 10) | `200 { data: OrderSummary[] }` |
+| `GET /api/returns/stats` | Desk counts per status + raised/closed in the last 7 days (dashboard) | `200 { data: ReturnStats }` |
 | `GET /api/orders/:orderNumber` | Order, customer and items (with any live return per item) | `200 { data: OrderDetail }` |
 
 **List query:** `q` (searches reference, customer name, customer email and order number),
@@ -277,24 +278,42 @@ refers to something missing.
 
 ## Frontend
 
-- **Desk list** (`/returns`): the URL query string is the state, so filters survive reloads, can
-  be shared, and work with Back. It is forwarded unchanged to `GET /api/returns`. Search is
-  debounced (350 ms) and an in-flight request is aborted when a newer one starts, so a slow
-  response can never overwrite a fresh one. While a new page loads, the previous results stay
-  visible (dimmed). Status is a coloured badge *with* a text label. There are explicit loading,
-  empty ("No return requests match" + Clear filters) and error (message + Try again) states.
-  It shows a table from `md` up and cards below.
-- **Request detail** (`/returns/RD-…`): details, notes (oldest first), status history. **Action
-  buttons are rendered from `allowedActions` returned by the API**, so the UI never re-derives the
-  rules. Approve opens a dialog asking for a resolution, and for a refund an amount (with the
-  maximum shown). Reject, Complete and Remove ask for confirmation. Any refusal is shown with the
-  server's message. On a 409/404 the request is also reloaded, so the buttons match its real state.
-- **Raise a request** (`/returns/new`): find the order (debounced search by number, name or
-  email) → pick the item (items with a live return are shown disabled with that return's reference)
-  → quantity, reason → customer contact (prefilled, editable).
+A deliberate design system rather than a generic admin theme: semantic colour tokens
+(`bg-surface`, `text-ink`, `border-line`, a status palette …) defined once in
+`src/app/globals.css`, an automatic **dark mode** that follows the operating system, soft layered
+shadows for depth, 150–300 ms ease-out motion, and full `prefers-reduced-motion` support.
+Icons are Lucide throughout. **Every number and event on screen comes from the API**: nothing is
+hard-coded or invented.
+
+- **Dashboard** (`/returns`)
+  - Hero with a CSS-only, 3D isometric stack showing the request → review → resolution →
+    completion stages (no images).
+  - KPI cards (total on desk + Open / In Review / Approved / Completed, each with its share of the
+    desk, plus requests raised and closed in the last 7 days) from `GET /api/returns/stats`, which
+    aggregates in SQL. Clicking a status card filters the queue.
+  - **Workflow graph** of the real state machine with live counts. Its edges are checked against
+    `TRANSITIONS` in development, so it can never show a move the server would refuse.
+  - **Queue**: command-style search (debounced 350 ms, `/` to focus, in-flight requests aborted),
+    status (multi-select), reason and sort menus, removable filter chips and a result count. The
+    URL query string is the state and is forwarded unchanged to `GET /api/returns`, so filtering,
+    sorting and paging stay in SQL. Table from `lg`, cards below; skeletons that mirror the real
+    layout; purposeful empty and error states; numbered pagination.
+- **Request detail** (`/returns/RD-…`): header with status, relative times and **only the actions
+  listed in the API's `allowedActions`**; info cards; resolution; notes as an activity feed; and a
+  **timeline built only from recorded data** (creation + status history), with the remaining
+  lifecycle steps drawn hollow and labelled *Upcoming*. Approve uses resolution cards (and an amount
+  for refunds); reject, complete and remove use confirmation dialogs (removal explains the record is
+  kept). Success and failure produce toasts carrying the server's message. A 409/404 also reloads
+  the request so the offered actions match its real state.
+- **New return** (`/returns/new`): a guided flow. 01 order & item (debounced order search; items
+  that already have a live return are shown disabled with its reference), 02 customer (prefilled
+  from the order), 03 return details (quantity stepper, reason cards), with a live **04 Review**
+  panel. The order comes first because it decides which items can be returned and pre-fills the
+  customer.
 - **Forms validate with the same Zod schemas as the API** (`src/lib/validation.ts`) for instant
   feedback. The server re-validates, and its field errors are mapped back onto the inputs.
-- **Responsive:** checked at 375 px wide with no horizontal overflow on any page.
+- **Responsive:** measured with no horizontal overflow at 320, 375, 390, 768 and 1024 px on every
+  page, and checked visually at 375 px.
 
 ---
 
@@ -360,7 +379,7 @@ refers to something missing.
 
 - Everything in "What ReturnDesk Must Do", and all five business rules, enforced on the server
   (and by the database where they are invariants).
-- 40 integration tests (`npm test`) that call the real route handlers against a real Postgres.
+- 41 integration tests (`npm test`) that call the real route handlers against a real Postgres.
   They cover the full 5×5 transition matrix, every refusal path of each rule, the concurrent-create
   race, soft delete (gone from the API but still in the table), the append-only trigger, and
   combined search/filter/sort/paging.
@@ -382,7 +401,7 @@ refers to something missing.
 
 Three independent layers, all passing on a freshly seeded database:
 
-1. **`npm test`**: 40 integration tests calling the route handlers against a test database.
+1. **`npm test`**: 41 integration tests calling the route handlers against a test database.
 2. **`npm run check:rules`**: 78 black-box HTTP checks against the running app (the way a
    reviewer with curl would test it). Point `BASE_URL` at the deployed app to check it too.
 3. **`npm run check:db`**: 22 raw-SQL attacks on the constraints (19 must be refused, 3 valid
