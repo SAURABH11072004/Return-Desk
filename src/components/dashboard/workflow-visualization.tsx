@@ -21,8 +21,9 @@ if (process.env.NODE_ENV !== "production") {
   }
 }
 
-export function WorkflowVisualization({ stats }: { stats: ReturnStats | undefined }) {
-  const count = (s: ReturnStatus) => stats?.byStatus[s];
+export function WorkflowVisualization({ stats, unavailable = false }: { stats: ReturnStats | undefined; unavailable?: boolean }) {
+  // null = counts could not be loaded (shown as a dash); undefined = still loading (skeleton).
+  const count = (s: ReturnStatus) => (unavailable ? null : stats?.byStatus[s]);
 
   return (
     <section aria-labelledby="workflow-title" className="surface relative overflow-hidden p-5 sm:p-6 lg:p-8">
@@ -87,7 +88,7 @@ function Node({
   compact = false,
 }: {
   status: ReturnStatus;
-  count: number | undefined;
+  count: number | null | undefined;
   step?: number;
   final?: boolean;
   compact?: boolean;
@@ -113,7 +114,9 @@ function Node({
       </p>
       <p className="mt-0.5 text-xs text-muted">{meta.description}</p>
       <p className="mt-3 flex items-baseline gap-1.5">
-        {count === undefined ? (
+        {count === null ? (
+          <span className="text-xl font-semibold text-faint">—</span>
+        ) : count === undefined ? (
           <span className="skeleton inline-block h-5 w-8" />
         ) : (
           <span className={`text-xl font-semibold tabular-nums ${meta.text}`}>{count}</span>

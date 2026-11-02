@@ -18,7 +18,18 @@ export const SORT_OPTIONS = [
 ];
 
 /** Search, filter and sort controls. All of it changes the URL; the server does the work. */
-export function FilterBar({ filters, total, loading }: { filters: DeskFilters; total: number | undefined; loading: boolean }) {
+export function FilterBar({
+  filters,
+  total,
+  loading,
+  failed,
+}: {
+  filters: DeskFilters;
+  total: number | undefined;
+  loading: boolean;
+  /** The last request failed, so there is no count to show. */
+  failed: boolean;
+}) {
   const searchRef = useRef<HTMLInputElement>(null);
 
   // "/" jumps to search, like most command bars.
@@ -117,7 +128,9 @@ export function FilterBar({ filters, total, loading }: { filters: DeskFilters; t
 
       <div className="mt-3 flex min-h-7 flex-wrap items-center gap-2 text-sm" aria-live="polite">
         <span className="text-muted">
-          {total === undefined ? (
+          {failed ? (
+            "Returns could not be loaded"
+          ) : total === undefined ? (
             "Loading returns…"
           ) : (
             <>

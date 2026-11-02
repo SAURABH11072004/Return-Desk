@@ -28,6 +28,13 @@ const TRANSITION_BUTTONS: Record<Target, { label: string; icon: LucideIcon; styl
   completed: { label: "Mark completed", icon: PackageCheck, style: button.primary, done: "Return completed", failed: "Unable to complete this return" },
 };
 
+/**
+ * Refusals meaning "this request changed under you" (another agent acted, or it was removed).
+ * Other refusals, such as a duplicate item or a bad amount, are about the input and keep the dialog open.
+ */
+const STALE_CODES = new Set(["INVALID_TRANSITION", "REQUEST_LOCKED", "REMOVAL_NOT_ALLOWED", "NOT_FOUND"]);
+const isStale = (err: unknown) => err instanceof ApiRequestError && STALE_CODES.has(err.code);
+
 const CONFIRM_COPY = {
   rejected: {
     title: "Reject this return?",
@@ -63,12 +70,20 @@ export function ActionBar({
   const { transitions, canEdit, canRemove } = detail.allowedActions;
   const path = `/api/returns/${encodeURIComponent(detail.reference)}`;
 
-  /** Report a refusal. Inside a dialog the error shows inline (a toast would sit behind the backdrop). */
+  /**
+   * Report a refusal. If our copy is stale, close any dialog (its action may no longer be legal),
+   * reload, and show the reason beside the refreshed actions. Other failures keep the dialog open
+   * with the reason inline, so the agent can correct and retry.
+   */
   function refused(err: unknown, title: string) {
     const message = errorMessage(err);
     setError(message);
-    if (!dialog) toast.error(title, message);
-    if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
+    const stale = isStale(err);
+    if (stale) {
+      setDialog(null);
+      onStale();
+    }
+    if (stale || !dialog) toast.error(title, message);
   }
 
   async function transition(to: Target) {
@@ -100,16 +115,18 @@ export function ActionBar({
   }
 
   const onTransitionClick = (to: Target) => {
-    setError(null);
-    if (to === "approved") setDialog({ kind: "approve" });
-    else if (to === "rejected" || to === "completed") setDialog({ kind: "confirm", to });
+    if (to === "approved") openDialog({ kind: "approve" });
+    else if (to === "rejected" || to === "completed") openDialog({ kind: "confirm", to });
     else void transition(to);
   };
 
-  const closeDialog = () => {
-    setDialog(null);
+  // Errors are cleared when a dialog opens, not when it closes: a stale-state refusal closes the
+  // dialog itself, and its reason must stay visible beside the refreshed actions.
+  const openDialog = (next: Dialog) => {
     setError(null);
+    setDialog(next);
   };
+  const closeDialog = () => setDialog(null);
 
   if (transitions.length === 0 && !canEdit && !canRemove) {
     return (
@@ -123,13 +140,13 @@ export function ActionBar({
     <div className="flex flex-col gap-3 lg:items-end">
       <div className="flex flex-wrap gap-2 lg:justify-end">
         {canRemove && (
-          <button type="button" className={button.danger} disabled={pending} onClick={() => setDialog({ kind: "remove" })}>
+          <button type="button" className={button.danger} disabled={pending} onClick={() => openDialog({ kind: "remove" })}>
             <Trash2 aria-hidden className="size-4" />
             Remove
           </button>
         )}
         {canEdit && (
-          <button type="button" className={button.secondary} disabled={pending} onClick={() => setDialog({ kind: "edit" })}>
+          <button type="button" className={button.secondary} disabled={pending} onClick={() => openDialog({ kind: "edit" })}>
             <PencilLine aria-hidden className="size-4" />
             Edit details
           </button>
@@ -199,7 +216,7 @@ export function ActionBar({
               );
             }}
             onFailed={(err) => {
-              if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
+              if (isStale(err)) refused(err, TRANSITION_BUTTONS.approved.failed);
             }}
             onCancel={closeDialog}
           />
@@ -224,7 +241,7 @@ export function ActionBar({
               toast.success("Details updated", `${detail.reference} has been corrected.`);
             }}
             onFailed={(err) => {
-              if (err instanceof ApiRequestError && (err.status === 409 || err.status === 404)) onStale();
+              if (isStale(err)) refused(err, "Unable to save the changes");
             }}
             onCancel={closeDialog}
           />

@@ -48,7 +48,7 @@ export function ReturnsDesk() {
         <StatCards stats={stats.data?.data} activeStatus={filters.status} onSelectStatus={selectStatus} />
       )}
 
-      <WorkflowVisualization stats={stats.data?.data} />
+      <WorkflowVisualization stats={stats.data?.data} unavailable={Boolean(stats.error) && !stats.loading} />
 
       <section id="queue" aria-labelledby="queue-title" className="flex scroll-mt-24 flex-col gap-4">
         <div className="flex items-end justify-between gap-4">
@@ -60,7 +60,7 @@ export function ReturnsDesk() {
           </div>
         </div>
 
-        <FilterBar filters={filters} total={result?.meta.total} loading={list.loading} />
+        <FilterBar filters={filters} total={result?.meta.total} loading={list.loading} failed={Boolean(list.error) && !list.loading} />
 
         {Boolean(list.error) && !list.loading && (
           <ErrorAlert title="Could not load return requests" message={errorMessage(list.error)} onRetry={list.reload} />
