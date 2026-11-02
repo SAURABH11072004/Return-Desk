@@ -9,7 +9,7 @@ export default function NewReturnPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <Link href="/returns" className="inline-flex w-fit items-center gap-1 text-[13px] text-muted transition-colors hover:text-ink">
+        <Link href="/returns" className="-my-2 inline-flex min-h-9 w-fit items-center gap-1 py-2 text-[13px] text-muted transition-colors hover:text-ink">
           <ArrowLeft aria-hidden className="size-3.5" /> Returns
         </Link>
         <div>
