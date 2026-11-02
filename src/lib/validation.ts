@@ -80,6 +80,14 @@ export type TransitionInput = z.infer<typeof transitionShapeSchema>;
 
 export type FieldIssue = { path: string; message: string };
 
+/** Flatten Zod issues to { path: "customer.email", message } — the same form the API returns. */
+export function toFieldIssues(error: z.ZodError): FieldIssue[] {
+  return error.issues.map((issue) => ({
+    path: issue.path.join(".") || "(body)",
+    message: issue.message,
+  }));
+}
+
 /**
  * Rule 2. Kept apart from the shape so the server can first report an illegal transition (409)
  * and only then complain about a missing resolution (422).

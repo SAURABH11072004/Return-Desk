@@ -1,13 +1,6 @@
 import { z } from "zod";
-import type { FieldIssue } from "@/lib/validation";
+import { toFieldIssues } from "@/lib/validation";
 import { ApiError, badRequest, conflict, validationFailed } from "@/server/errors";
-
-export function toFieldIssues(error: z.ZodError): FieldIssue[] {
-  return error.issues.map((issue) => ({
-    path: issue.path.join(".") || "(body)",
-    message: issue.message,
-  }));
-}
 
 /** Parse and validate a JSON body. Malformed JSON is a 400; a rule violation is a 422. */
 export async function readJson<S extends z.ZodType>(request: Request, schema: S): Promise<z.output<S>> {
