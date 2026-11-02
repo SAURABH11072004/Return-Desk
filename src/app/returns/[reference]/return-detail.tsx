@@ -159,15 +159,16 @@ function DetailSkeleton() {
       <div className="flex flex-col gap-3 border-b border-line pb-5">
         <Skeleton className="h-3 w-16" />
         <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-8 w-52" />
-        <Skeleton className="h-3 w-60" />
+        <Skeleton className="h-8 w-full max-w-52" />
+        <Skeleton className="h-3 w-full max-w-60" />
       </div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
         <div className="panel divide-y divide-line">
           {Array.from({ length: 6 }, (_, i) => (
             <div key={i} className="flex gap-4 px-5 py-3.5">
-              <Skeleton className="h-3.5 w-20" />
-              <Skeleton className="h-3.5 w-48" />
+              <Skeleton className="h-3.5 w-20 shrink-0" />
+              {/* flexible width: fixed bars overflowed 320px screens while loading */}
+              <Skeleton className="h-3.5 w-full max-w-48" />
             </div>
           ))}
         </div>

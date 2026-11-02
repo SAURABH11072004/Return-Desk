@@ -31,8 +31,8 @@ export function QueueSkeleton() {
               <Skeleton className="h-3.5 w-20" />
               <Skeleton className="h-5 w-20 rounded-full" />
             </div>
-            <Skeleton className="h-3.5 w-48" />
-            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-3.5 w-full max-w-48" />
+            <Skeleton className="h-3 w-full max-w-40" />
           </div>
         ))}
       </div>
