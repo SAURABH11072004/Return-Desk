@@ -432,4 +432,4 @@ regression test.
 
 ## Time spent
 
-_Roughly N hours_ (fill in before submitting).
+Roughly **6 hours** in total.
