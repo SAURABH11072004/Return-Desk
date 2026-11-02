@@ -153,7 +153,9 @@ async function main() {
     const path = pathTo(status);
     // Created between 1 and ~60 days ago, after the order was placed; later requests are newer.
     const createdAt = new Date(Math.max(order.placedAt.getTime() + DAY, NOW - (60 - i * 1.3) * DAY));
-    const changeTimes = path.slice(1).map((_, k) => new Date(createdAt.getTime() + (k + 1) * between(6, 30) * HOUR));
+    // Each status change happens 6–30 hours after the previous one, so history is always in order.
+    let clock = createdAt.getTime();
+    const changeTimes = path.slice(1).map(() => new Date((clock += between(6, 30) * HOUR)));
     const lastActivity = changeTimes.at(-1) ?? createdAt;
 
     const decided = status === "approved" || status === "completed";
