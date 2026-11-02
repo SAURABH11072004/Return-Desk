@@ -1,10 +1,33 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { X, type LucideIcon } from "lucide-react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
-/** Native <dialog>: focus trapping, Escape to close and a backdrop come for free. */
-export function Modal({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
+/**
+ * Native <dialog>: focus trapping, Escape to close and the backdrop come from the browser.
+ * The entrance animation is in globals.css (dialog[open]).
+ */
+export function Modal({
+  open,
+  title,
+  description,
+  icon: Icon,
+  tone = "default",
+  size = "md",
+  onClose,
+  children,
+}: {
+  open: boolean;
+  title: string;
+  description?: ReactNode;
+  icon?: LucideIcon;
+  tone?: "default" | "danger";
+  size?: "md" | "lg";
+  onClose: () => void;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -17,15 +40,39 @@ export function Modal({ open, title, onClose, children }: { open: boolean; title
     <dialog
       ref={ref}
       onClose={onClose}
-      aria-labelledby="modal-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-lg p-0 shadow-xl backdrop:bg-slate-900/50"
+      aria-labelledby={titleId}
+      className={`m-auto w-[calc(100%-1.5rem)] rounded-2xl border border-line bg-surface p-0 text-ink shadow-floating ${
+        size === "lg" ? "max-w-2xl" : "max-w-md"
+      }`}
     >
       {open && (
-        <div className="flex flex-col gap-4 p-5">
-          <h2 id="modal-title" className="text-lg font-semibold text-slate-900">
-            {title}
-          </h2>
-          {children}
+        <div className="flex max-h-[85vh] flex-col">
+          <div className="flex items-start gap-3.5 px-5 pt-5 sm:px-6 sm:pt-6">
+            {Icon && (
+              <span
+                className={`grid size-10 shrink-0 place-items-center rounded-xl border ${
+                  tone === "danger" ? "border-danger-line bg-danger-soft text-danger-text" : "border-line bg-surface-2 text-accent-text"
+                }`}
+              >
+                <Icon aria-hidden className="size-5" />
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <h2 id={titleId} className="text-lg font-semibold tracking-tight">
+                {title}
+              </h2>
+              {description && <div className="mt-1 text-sm text-muted">{description}</div>}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="-mr-1 -mt-1 grid size-8 place-items-center rounded-lg text-faint transition-colors hover:bg-surface-3 hover:text-ink"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="overflow-y-auto px-5 pb-5 pt-4 sm:px-6 sm:pb-6">{children}</div>
         </div>
       )}
     </dialog>

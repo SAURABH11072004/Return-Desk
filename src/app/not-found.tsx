@@ -1,13 +1,21 @@
+import { Compass } from "lucide-react";
 import Link from "next/link";
+import { button } from "@/components/button";
+import { EmptyState } from "@/components/empty-state";
 
 export default function NotFound() {
   return (
-    <div className="mx-auto max-w-md py-16 text-center">
-      <h1 className="text-xl font-semibold">Page not found</h1>
-      <p className="mt-2 text-sm text-slate-600">There is nothing at this address.</p>
-      <Link href="/returns" className="mt-4 inline-block text-sm font-medium text-indigo-700 hover:underline">
-        Back to the desk
-      </Link>
+    <div className="mx-auto max-w-lg py-10">
+      <EmptyState
+        icon={Compass}
+        title="Page not found"
+        description="There is nothing at this address."
+        action={
+          <Link href="/returns" className={button.primary}>
+            Back to returns
+          </Link>
+        }
+      />
     </div>
   );
 }

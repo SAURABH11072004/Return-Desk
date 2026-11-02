@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Spinner } from "@/components/spinner";
 import { ReturnsDesk } from "./returns-desk";
 
-export const metadata: Metadata = { title: "Return requests" };
+export const metadata: Metadata = { title: "Returns" };
 
 export default function ReturnsPage() {
+  // useSearchParams needs a Suspense boundary; the desk renders its own skeletons while loading.
   return (
-    <Suspense fallback={<Spinner />}>
+    <Suspense>
       <ReturnsDesk />
     </Suspense>
   );

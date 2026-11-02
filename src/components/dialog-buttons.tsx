@@ -1,3 +1,4 @@
+import { LoaderCircle } from "lucide-react";
 import { button } from "@/components/button";
 
 /** Cancel + confirm row used at the bottom of every dialog. */
@@ -17,7 +18,7 @@ export function DialogButtons({
   submit?: boolean;
 }) {
   return (
-    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+    <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
       <button type="button" className={button.secondary} onClick={onCancel} disabled={pending}>
         Cancel
       </button>
@@ -27,7 +28,8 @@ export function DialogButtons({
         onClick={onConfirm}
         disabled={pending}
       >
-        {pending ? "Working…" : confirmLabel}
+        {pending && <LoaderCircle aria-hidden className="size-4 animate-spin" />}
+        {confirmLabel}
       </button>
     </div>
   );

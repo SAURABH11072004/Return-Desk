@@ -1,22 +1,18 @@
-import { STATUS_LABELS, type ReturnStatus } from "@/lib/domain";
+import type { ReturnStatus } from "@/lib/domain";
+import { STATUS_META } from "@/components/status-meta";
 
-const STYLES: Record<ReturnStatus, { badge: string; dot: string }> = {
-  open: { badge: "bg-sky-50 text-sky-800 ring-sky-600/30", dot: "bg-sky-500" },
-  in_review: { badge: "bg-amber-50 text-amber-900 ring-amber-600/30", dot: "bg-amber-500" },
-  approved: { badge: "bg-emerald-50 text-emerald-800 ring-emerald-600/30", dot: "bg-emerald-500" },
-  rejected: { badge: "bg-rose-50 text-rose-800 ring-rose-600/30", dot: "bg-rose-500" },
-  completed: { badge: "bg-slate-100 text-slate-700 ring-slate-500/30", dot: "bg-slate-500" },
-};
-
-/** Colour plus text label, so status reads at a glance and never relies on colour alone. */
-export function StatusBadge({ status }: { status: ReturnStatus }) {
-  const style = STYLES[status];
+/** Icon + tint + border + text label, so status reads at a glance and never relies on colour alone. */
+export function StatusBadge({ status, size = "sm" }: { status: ReturnStatus; size?: "sm" | "md" }) {
+  const meta = STATUS_META[status];
+  const Icon = meta.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${style.badge}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border font-medium transition-colors duration-300 ${meta.badge} ${
+        size === "md" ? "px-3 py-1 text-[13px]" : "px-2.5 py-0.5 text-xs"
+      }`}
     >
-      <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-      {STATUS_LABELS[status]}
+      <Icon aria-hidden className={size === "md" ? "size-4" : "size-3.5"} strokeWidth={2.25} />
+      {meta.label}
     </span>
   );
 }

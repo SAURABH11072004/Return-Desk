@@ -1,9 +1,13 @@
 import type { ReactNode } from "react";
 
 export const inputClass =
-  "block w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 " +
-  "placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 disabled:bg-slate-50 disabled:text-slate-500 " +
-  "aria-[invalid=true]:ring-rose-500";
+  "block h-10 w-full rounded-xl border border-line bg-surface px-3.5 text-sm text-ink shadow-card " +
+  "placeholder:text-faint transition-[border-color,box-shadow] duration-150 " +
+  "hover:border-line-strong focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15 " +
+  "disabled:bg-surface-2 disabled:text-muted " +
+  "aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/15";
+
+export const textareaClass = inputClass.replace("h-10", "min-h-24 py-2.5");
 
 /** Label + control + inline error. The control should set aria-invalid and aria-describedby itself. */
 export function Field({
@@ -20,17 +24,17 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink-2">
         {label}
       </label>
       {children}
       {error ? (
-        <p id={`${htmlFor}-error`} className="text-xs text-rose-700">
+        <p id={`${htmlFor}-error`} className="animate-fade-in text-xs text-danger-text">
           {error}
         </p>
       ) : (
-        hint && <p className="text-xs text-slate-500">{hint}</p>
+        hint && <p className="text-xs text-faint">{hint}</p>
       )}
     </div>
   );
