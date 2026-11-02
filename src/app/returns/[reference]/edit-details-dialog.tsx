@@ -20,14 +20,14 @@ export function EditDetailsDialog({
   detail,
   path,
   onDone,
+  onFailed,
   onCancel,
-  onStale,
 }: {
   detail: ReturnDetail;
   path: string;
   onDone: (detail: ReturnDetail) => void;
+  onFailed: (error: unknown) => void;
   onCancel: () => void;
-  onStale: () => void;
 }) {
   const [values, setValues] = useState<RequestFormValues>({
     sku: detail.item.sku,
@@ -70,17 +70,15 @@ export function EditDetailsDialog({
       onDone(data);
     } catch (err) {
       setFormError(errorMessage(err));
-      if (err instanceof ApiRequestError) {
-        setErrors(fieldErrors(err.issues));
-        if (err.status === 409 || err.status === 404) onStale();
-      }
+      if (err instanceof ApiRequestError) setErrors(fieldErrors(err.issues));
+      onFailed(err);
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <form onSubmit={submit} noValidate className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pr-1">
+    <form onSubmit={submit} noValidate className="flex flex-col gap-5">
       {orderError ? (
         <ErrorAlert title="Could not load the order's items" message={orderError} />
       ) : order ? (

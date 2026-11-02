@@ -1,5 +1,5 @@
-import { BadgeCheck, CircleX, Inbox, PackageCheck, ScanSearch, type LucideIcon } from "lucide-react";
-import { STATUS_LABELS, type ReturnStatus } from "@/lib/domain";
+import { BadgeCheck, CircleX, Gift, Inbox, PackageCheck, RefreshCw, ScanSearch, Wallet, type LucideIcon } from "lucide-react";
+import { STATUS_LABELS, type Resolution, type ReturnStatus } from "@/lib/domain";
 
 /** How each status looks. Presentation only: which moves are legal lives in lib/domain.ts. */
 export const STATUS_META: Record<
@@ -56,4 +56,10 @@ export const STATUS_META: Record<
     soft: "bg-completed-bg",
     ring: "border-completed-line",
   },
+};
+
+export const RESOLUTION_META: Record<Resolution, { icon: LucideIcon; description: string }> = {
+  refund: { icon: Wallet, description: "Money back for the returned units" },
+  replacement: { icon: RefreshCw, description: "Send the same item again" },
+  store_credit: { icon: Gift, description: "Credit to spend on a future order" },
 };
