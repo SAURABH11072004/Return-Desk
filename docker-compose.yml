@@ -1,0 +1,16 @@
+# Local PostgreSQL for development and tests. Production uses a hosted Postgres (Neon).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: returndesk
+      POSTGRES_PASSWORD: returndesk
+      POSTGRES_DB: returndesk
+    ports:
+      - "5433:5432"
+    volumes:
+      - returndesk-data:/var/lib/postgresql/data
+      - ./scripts/create-test-db.sql:/docker-entrypoint-initdb.d/create-test-db.sql:ro
+
+volumes:
+  returndesk-data:
